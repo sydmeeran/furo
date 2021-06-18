@@ -8,23 +8,11 @@ use Furo\Response;
 use Furo\Entities\Status;
 use App\Model\Page;
 use Exception;
-use Furo\Img\ResizeImage;
 
 class Home
 {
 	function Index()
 	{
-		$resize = new ResizeImage('/home/boo/www/furo.xx/public/marker.png');
-		// resize
-		$resize->resizeTo(100, 100, 'maxWidth');
-		// $resize->resizeTo(100, 100, 'maxHeight');
-		// $resize->resizeTo(100, 100, 'exact');
-		// $resize->resizeTo(100, 100);
-		// save
-		$resize->save('/home/boo/www/furo.xx/public/marker.webp');
-		// download
-		// $resize->save('images/be-original-exact.jpg', "100", true);
-
 		$httpCode = 200;
 		$statusCode = Status::OK;
 		$statusMsg = 'users_info';
