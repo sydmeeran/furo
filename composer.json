@@ -1,0 +1,46 @@
+{
+	"name": "wowpowhub/furo",
+	"description": "Furo Php rest api router.",
+	"type": "project",
+	"license": "MIT",
+	"minimum-stability": "stable",
+	"prefer-stable": true,
+	"require": {
+		"php": "^7.3",
+		"ext-pdo": "*",
+		"ext-mbstring": "*",
+		"ext-json": "*",
+		"ext-hash": "*",
+		"ext-xml": "*",
+		"ext-redis": "*",
+		"ext-curl": "*",
+		"ext-openssl": "*",
+		"ext-gd": "*",
+		"ext-imagick": "*",
+		"imagine/imagine": ">=1.2.4",
+		"phpmailer/phpmailer": ">=6.4"
+	},
+	"require-dev": {
+		"phpunit/phpunit": "^9"
+	},
+	"autoload": {
+		"psr-4": {
+			"App\\": "app/",
+			"Furo\\": "src/"
+		}
+	},
+	"autoload-dev": {
+        "psr-4": { "Tests\\": "tests/" }
+    },
+	"authors": [
+		{
+			"name": "wowpowhub",
+			"email": "wowpowhub@gmail.com"
+		}
+	],
+	"scripts": {
+		"post-root-package-install": [
+			"@php -r \"echo phpversion();\""
+		]
+	}
+}

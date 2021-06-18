@@ -1,0 +1,52 @@
+http {
+	# log format
+	log_format compression '$remote_addr - $remote_user [$time_local] "$request" $status $body_bytes_sent "$http_referer" "$http_user_agent" "$gzip_ratio"';
+
+	server {
+		listen 80;
+		listen [::]:80;
+
+		server_name furo.xx;
+		root /var/www/html/furo.xx/public;
+		index index.php;
+
+		error_log  /var/log/furo.xx.error.log warn;
+		access_log  /var/log/furo.xx.access.log;
+
+		location / {
+			try_files $uri $uri/ /index.php?url=$uri&$args;
+		}
+
+		location ~ \.php$ {
+			include snippets/fastcgi-php.conf;
+			fastcgi_pass unix:/var/run/php/php7.3-fpm.sock;
+		}
+
+		location ~* .(webp|jpg|jpeg|png|gif|ico|css|js)$ {
+			expires 365d;
+			access_log off;
+		}
+
+		location ~ /(Cache|cache|.cache|.git) {
+			deny all;
+			return 404;
+			access_log off;
+			log_not_found off;
+		}
+
+		location ~ /\.(?!well-known).* {
+			deny all;
+			return 404;
+			access_log off;
+			log_not_found off;
+		}
+
+		gzip on;
+		disable_symlinks off;
+		client_max_body_size 100M;
+
+		# Tls redirect
+		# return 301 https://$host$request_uri;
+		# return 301 https://furo.xx$request_uri;
+	}
+}
