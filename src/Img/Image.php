@@ -112,7 +112,7 @@ class Image
 }
 
 /*
-use App\Core\Img\Image;
+use Furo\Img\Image;
 
 $img = new Image();
 // Resize and save
