@@ -9,106 +9,106 @@ use Imagine\Imagick\Imagine;
 
 class Image
 {
-    protected $Path = '';
-    protected $Extension = '';
-    protected $RawImage = null;
-    protected $Size = null;
+	protected $Path = '';
+	protected $Extension = '';
+	protected $RawImage = null;
+	protected $Size = null;
 
-    function load($path)
-    {
-        // Path
-        $this->Path = $path;
-        // File
-        $this->Extension = $this->fileExtension($this->Path);
-        // Image
-        $image = new Imagine();
-        $this->RawImage = $image->open($this->Path);
-        // Size
-        $this->Size = $this->RawImage->getSize();
+	function load($path)
+	{
+		// Path
+		$this->Path = $path;
+		// File
+		$this->Extension = $this->fileExtension($this->Path);
+		// Image
+		$image = new Imagine();
+		$this->RawImage = $image->open($this->Path);
+		// Size
+		$this->Size = $this->RawImage->getSize();
 
-        return $this;
-    }
+		return $this;
+	}
 
-    function fileExists($path)
-    {
-        if(!file_exists($path))
-        {
-            throw new Exception("ERR_FILE_PATH", 1);
-        }
-    }
+	function fileExists($path)
+	{
+		if(!file_exists($path))
+		{
+			throw new Exception("ERR_FILE_PATH", 1);
+		}
+	}
 
-    function fileExtension($path)
-    {
-        $this->fileExists($path);
+	function fileExtension($path)
+	{
+		$this->fileExists($path);
 
-        return pathinfo($path, PATHINFO_EXTENSION);
-    }
+		return pathinfo($path, PATHINFO_EXTENSION);
+	}
 
-    function resizeImage(int $width, int $height = 0)
-    {
-        // Image width
-        $ratio = $width / $this->Size->getWidth();
+	function resizeImage(int $width, int $height = 0)
+	{
+		// Image width
+		$ratio = $width / $this->Size->getWidth();
 
-        // Auto resize
-        if($height == 0)
-        {
-            $height = $ratio * $this->Size->getHeight();
-        }
+		// Auto resize
+		if($height == 0)
+		{
+			$height = $ratio * $this->Size->getHeight();
+		}
 
-        $this->RawImage->resize(new Box($width, $height), ImageInterface::FILTER_LANCZOS);
+		$this->RawImage->resize(new Box($width, $height), ImageInterface::FILTER_LANCZOS);
 
-        return $this;
-    }
+		return $this;
+	}
 
-    function crop($width, $height, $start_width = 0, $start_height = 0)
-    {
-        $this->RawImage->crop(new Point($start_width, $start_height), new Box($width, $height));
+	function crop($width, $height, $start_width = 0, $start_height = 0)
+	{
+		$this->RawImage->crop(new Point($start_width, $start_height), new Box($width, $height));
 
-        return $this;
-    }
+		return $this;
+	}
 
-    function save($path, $flatten = true)
-    {
+	function save($path, $flatten = true)
+	{
 		if($flatten) {
 			$this->RawImage->save($path, array('flatten' => true));
 		}else {
 			$this->RawImage->save($path, array('flatten' => false));
 		}
 
-        return $this;
-    }
+		return $this;
+	}
 
-    function show($type = 'jpg')
-    {
-        ob_end_clean();
+	function show($type = 'jpg')
+	{
+		ob_end_clean();
 
-        if($type == 'png' || $type == 'gif' || $type == 'webp')
-        {
-            $this->RawImage->show($type);
-        }
-        else
-        {
-            $this->RawImage->show('jpg');
-        }
-    }
+		if($type == 'png' || $type == 'gif' || $type == 'webp')
+		{
+			$this->RawImage->show($type);
+		}
+		else
+		{
+			$this->RawImage->show('jpg');
+		}
+	}
 
-    function saveQualityPng($path, $quality = 9)
-    {
-        if($quality < 0 || $quality > 9)
-        {
-            $quality = 9;
-        }
-        $this->RawImage->save($path, array('png_compression_level' => $quality, 'flatten' => false)); // from 0 to 9
-    }
+	function saveQualityPng($path, $quality = 9)
+	{
+		if($quality < 0 || $quality > 9)
+		{
+			$quality = 9;
+		}
+		$this->RawImage->save($path, array('png_compression_level' => $quality, 'flatten' => false)); // from 0 to 9
+	}
 
-    function saveQualityJpg($path, $quality  = 100)
-    {
-        if($quality < 0 || $quality > 100)
-        {
-            $quality = 100;
-        }
-        $this->RawImage->save($path, array('jpeg_quality' => $quality, 'flatten' => false)); // from 0 to 100
-    }
+	function saveQualityJpg($path, $quality  = 100)
+	{
+		if($quality < 0 || $quality > 100)
+		{
+			$quality = 100;
+		}
+		$this->RawImage->save($path, array('jpeg_quality' => $quality, 'flatten' => false)); // from 0 to 100
+	}
 }
 
 /*
