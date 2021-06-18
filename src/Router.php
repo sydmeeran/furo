@@ -14,6 +14,7 @@ class Router
 	protected static $currentRoute = '';
 	protected static $errorClass;
 	protected static $errorMethod;
+	public static $httpMethods = ['GET', 'POST', 'PUT', 'PATCH', 'OPTIONS', 'DELETE'];
 
 	private static $instance = null;
 
@@ -38,8 +39,10 @@ class Router
 		return self::$currentRoute;
 	}
 
-	protected static function route($path, $class, $method = 'index', $middleware = [], $request = 'GET') {
-		self::$routes[$request][] = new Route($path, $class, $method, $middleware, $request);
+	protected static function route($path, $class, $method = 'index', $middleware = [], $req = 'GET') {
+		if(in_array($req, self::$httpMethods)) {
+			self::$routes[$req][] = new Route($path, $class, $method, $middleware, $req);
+		}
 	}
 
 	static function error($class, $method) {
