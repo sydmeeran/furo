@@ -1,8 +1,10 @@
 <?php
 namespace Furo\Img;
 
+use Exception;
+
 /**
- * Resize image class will allow you to resize an image: jpg, png, gif
+ * Resize image class will allow you to resize an image: jpg, png, gif, webp
  *
  * Can resize to exact size
  * Max width size while keep aspect ratio
@@ -18,6 +20,7 @@ class ResizeImage
 	private $origHeight;
 	private $resizeWidth;
 	private $resizeHeight;
+
 	/**
 	 * Class constructor requires to send through the image filename
 	 *
@@ -28,7 +31,7 @@ class ResizeImage
 		if(file_exists($filename)) {
 			$this->setImage( $filename );
 		} else {
-			throw new Exception('ERR_IMAGE', 400);
+			throw new Exception('ERR_IMAGE_PATH', 400);
 		}
 	}
 
