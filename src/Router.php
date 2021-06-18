@@ -18,8 +18,7 @@ class Router
 
 	private static $instance = null;
 
-	public static function getInstance(): self
-	{
+	public static function getInstance(): self {
 		if (self::$instance === null) {
 			self::$instance = new self();
 		}
@@ -30,8 +29,7 @@ class Router
 	private function __clone() {}
 	private function __wakeup() {}
 
-	static function getRoutes()
-	{
+	static function getRoutes() {
 		return self::$routes;
 	}
 
@@ -132,8 +130,7 @@ class Router
 		}
 	}
 
-	static function middleware($arr)
-	{
+	static function middleware($arr) {
 		foreach ($arr as $path) {
 			$c = explode('::', $path);
 			self::loadMiddleware($c[0], $c[1]);
