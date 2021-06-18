@@ -187,6 +187,8 @@ class ResizeImage
 	}
 }
 /*
+use Furo\Img\ResizeImage;
+
 $resize = new ResizeImage('images/Be-Original.jpg');
 // resize
 $resize->resizeTo(100, 100, 'maxWidth');
