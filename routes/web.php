@@ -11,13 +11,13 @@ try
 	/* Settings */
 
 	// Db
-	Db::user('root')->pass('toor')->host('localhost');
+	Db::user('root')->pass('toor')->host('localhost')->database('app');
 
 	// Db redis
 	Db::redisPort('6379')->redisHost('localhost');
 
 	// Smtp
-	Mail::from('no-reply@wfuro.xx', 'Furo email');
+	Mail::from('no-reply@furo.xx', 'Furo email');
 	// Mail::debug();
 
 	/* Routes */
