@@ -51,15 +51,9 @@ class ResizeImage
 				break;
 			case 'image/png':
 				$this->image = @imagecreatefrompng($filename);
-				// imagepalettetotruecolor($this->image);
-				imagealphablending($this->image,true);
-				imagesavealpha($this->image,true);
 				break;
 			case 'image/webp':
 				$this->image = @imagecreatefromwebp($filename);
-				// imagepalettetotruecolor($this->image);
-				imagealphablending($this->image,true);
-				imagesavealpha($this->image,true);
 				break;
 			default:
 				throw new Exception("ERR_IMAGE_MIME", 400);
