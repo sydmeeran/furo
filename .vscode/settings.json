@@ -10,8 +10,8 @@
     "files.trimTrailingWhitespace": true,
     "php.executablePath": "/usr/bin/php",
     "php.validate.executablePath": "/usr/bin/php",
-	"php.suggest.basic": false,
 	"php.validate.run": "onSave",
 	"php.memoryLimit": "1024M",
-	"php.validate.enable": false
+	"php.suggest.basic": true,
+	"php.validate.enable": true
 }
