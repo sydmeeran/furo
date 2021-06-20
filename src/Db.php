@@ -116,7 +116,7 @@ class Db
 			// prepared statements, don't cache query with prepared statments
 			$con->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
 			// Multiple statments
-			$con->setAttribute(PDO::MYSQL_ATTR_MULTI_STATEMENTS,false);
+			$con->setAttribute(PDO::MYSQL_ATTR_MULTI_STATEMENTS, false);
 			// auto commit
 			// $con->setAttribute(PDO::ATTR_AUTOCOMMIT,flase);
 			// buffered querry default
@@ -149,11 +149,93 @@ class Db
 	 * @param array $arr Array with params for secure sql injection
 	 * @return object Return self object
 	 */
-	static function query($sql, $arr = array())
+	static function query($sql, $arr = [])
 	{
 		self::$pdo = self::conn();
 		self::$stm = self::$pdo->prepare($sql);
 		self::$stm->execute($arr);
+
+		return self::getInstance();
+	}
+
+	/**
+	 * Mysql query transactions
+	 *
+	 * $row = Db::query(["SELECT * FROM user WHERE id = :id"], [[':id' => 123456]])->FetchObj();
+	 * $rows = Db::query(["SELECT * FROM user WHERE id > :id"], [[':id' => 0]])->FetchAll();
+	 * $rows = Db::query(["SELECT * FROM user WHERE id > :id"], [[':id' => 0]], 'LOCK TABLES user WRITE')->FetchAll();
+	 *
+	 * @param string $sql Mysql query
+	 * @param array $arr Array with params for secure sql injection
+	 * @return object Return self object
+	 */
+	static function transaction(array $sql = [], array $arr = [], $sql_lock = '')
+	{
+		self::$pdo = self::conn();
+
+		try {
+
+			if(!empty($sql_lock)) {
+				self::$pdo->exec($sql_lock);
+			}
+
+			self::$pdo->beginTransaction();
+
+			$cnt = 0;
+			foreach ($sql as $q) {
+				self::$stm = self::$pdo->prepare($q);
+				if(empty($arr[$cnt])) {
+					$arr[$cnt] = [];
+				}
+				self::$stm->execute($arr[$cnt]);
+				$cnt++;
+			}
+
+			self::$pdo->commit();
+
+			if(!empty($sql_lock)) {
+				self::$pdo->exec("UNLOCK TABLES");
+			}
+		} catch (Exception $e) {
+			self::$pdo->rollBack();
+			if(!empty($sql_lock)) {
+				self::$pdo->exec("UNLOCK TABLES");
+			}
+			throw $e;
+		}
+
+		return self::getInstance();
+	}
+
+	/**
+	 * Lock mysql tables
+	 *
+	 * Db::lock('LOCK TABLES user WRITE, address READ');
+	 *
+	 * READ - Read lock, no writes allowed
+	 * READ LOCAL - Read lock, but allow concurrent inserts
+	 * WRITE - Exclusive write lock. No other connections can read or write to this table
+	 * LOW_PRIORITY WRITE - Exclusive write lock, but allow new read locks on the table until we get the write lock.
+	 * WRITE CONCURRENT - Exclusive write lock, but allow READ LOCAL locks to the table
+	 *
+	 * @param string $sql Sql query: LOCK TABLES [tb1] WRITE, [tb2] READ
+	 * @return object Return self object
+	 */
+	static function lock($sql)
+	{
+		self::$pdo->exec($sql);
+
+		return self::getInstance();
+	}
+
+	/**
+	 * Unclock mysql table
+	 *
+	 * @return object Return self object
+	 */
+	static function unlock()
+	{
+		self::$pdo->exec("UNLOCK TABLES");
 
 		return self::getInstance();
 	}
