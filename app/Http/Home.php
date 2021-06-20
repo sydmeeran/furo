@@ -16,6 +16,7 @@ class Home
 		$httpCode = 200;
 		$statusCode = Status::OK;
 		$statusMsg = 'users_info';
+		$time = time();
 
 		try {
 			// Fetch rows with cache
@@ -27,9 +28,13 @@ class Home
 
 			// Fetch obj
 			// $rows = Db::query("SELECT * FROM user WHERE id != :id ORDER BY id DESC LIMIT 2", [':id' => 0])->fetchAllObj();
-
 			// Fetch custom class obj
-			$rows = Db::query("SELECT * FROM user WHERE id != :id ORDER BY id DESC LIMIT 2", [':id' => 0])->fetchAllObj("App\Model\UserModel");
+			// $rows = Db::query("SELECT * FROM user WHERE id != :id ORDER BY id DESC LIMIT 2", [':id' => 0])->fetchAllObj("App\Model\UserModel");
+
+			// Transaction
+			// $rows = Db::transaction(["SELECT * FROM user WHERE id != :id ORDER BY id DESC LIMIT 2", "SELECT SLEEP(1)"], [[':id' => 0]])->fetchAllObj("App\Model\UserModel");
+			// Lock tables with transaction
+			$rows = Db::transaction(["UPDATE user SET about = 'Driver $time'", "SELECT * FROM user WHERE id != :id ORDER BY id DESC LIMIT 2"], [[], [':id' => 0]], 'LOCK TABLES user WRITE')->fetchAllObj("App\Model\UserModel");
 
 			// Update users name with rand value
 			foreach ($rows as $k => $user) {
