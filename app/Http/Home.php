@@ -6,6 +6,7 @@ use Furo\Mail;
 use Furo\Request;
 use Furo\Response;
 use Furo\Entities\Status;
+use Furo\Img\ResizeImage;
 use App\Model\Page;
 use Exception;
 
@@ -17,6 +18,7 @@ class Home
 		$statusCode = Status::OK;
 		$statusMsg = 'users_info';
 		$time = time();
+		$image = '';
 
 		try {
 			// Fetch rows with cache
@@ -50,6 +52,9 @@ class Home
 			$page->page(2)->limit(2)->asc()->fields(['username','name','email']); // sort asc
 			$rows = $page->rows('user', 'admin user worker driver');
 
+			// Unique image path
+			$image = ResizeImage::uploadPath('media/marker.webp', false);
+
 			// Send email
 			$html = Mail::theme('App\Entities\EmailTheme', 'Welcome', ['{USER}' => 'Marry Doe']);
 			Mail::send('boo@woo.xx','Welcome email', $html);
@@ -67,6 +72,7 @@ class Home
 			],
 			'name' => 'Furo',
 			'desc' => 'Hello from php router!',
+			'unique_image' => $image,
 			'url_id' => Request::urlParam('id'),
 			'url_name' => Request::urlParam('name'),
 			'query_id' => Request::get('id'),
