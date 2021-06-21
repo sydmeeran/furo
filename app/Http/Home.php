@@ -53,7 +53,8 @@ class Home
 			$rows = $page->rows('user', 'admin user worker driver');
 
 			// Unique image path
-			$image = ResizeImage::uploadPath('media/marker.webp', false);
+			$res = new ResizeImage('marker.png');
+			$image = $res->uploadPath('marker.webp', false);
 
 			// Send email
 			$html = Mail::theme('App\Entities\EmailTheme', 'Welcome', ['{USER}' => 'Marry Doe']);
