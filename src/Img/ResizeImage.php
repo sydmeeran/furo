@@ -184,33 +184,35 @@ class ResizeImage
 	}
 
 	/**
-	 * Get upload file path and create dir structure
+	 * Get upload unique file path and create dir structure
 	 *
-	 * @param  string $path - Path to image or file
+	 * @param  string $path - Path to image or file with extensions
 	 *
-	 * @return Path to file
+	 * @return string Path to new file
 	 */
-	function uploadPath($path, $mkdir = true, $dir = 'media')
+	static function uploadPath($path, $mkdir = true, $dir = 'media')
 	{
 		if(empty($dir)) {
 			throw new Exception("ERR_UPLOAD_DIR", 400);
 		}
-
+		// Extension
 		$ext = pathinfo($path, PATHINFO_EXTENSION);
-		$dir = rtrim($dir,'/');
-		$dir = ltrim($dir,'/');
-
-		$h = md5(uniqid() . $path);
-
+		$dir = rtrim($dir, '/');
+		$dir = ltrim($dir, '/');
+		// Unique id
+		$uid = bin2hex(random_bytes(20));
+		$path = rtrim($path, '/');
+		$h = md5($uid . $path);
+		// Dir structure
 		$d1 = substr($h,0,2);
 		$d2 = substr($h,2,2);
 		$d3 = substr($h,4,2);
-
-		$new = $_SERVER['DOCUMENT_ROOT'].'/'.$dir.'/'.$d1.'/'.$d2.'/'.$d3;
+		// New path
+		$p = $_SERVER['DOCUMENT_ROOT'].'/'.$dir.'/'.$d1.'/'.$d2.'/'.$d3;
 		if($mkdir == true) {
-			mkdir($new, 0775, true);
+			mkdir($p, 0775, true);
 		}
-		return $new.'/'.$h.'.'.$ext;
+		return $p.'/'.$h.'.'.$ext;
 	}
 }
 /*
