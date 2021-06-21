@@ -190,7 +190,7 @@ class ResizeImage
 	 *
 	 * @return string Path to new file
 	 */
-	static function uploadPath($path, $mkdir = true, $dir = 'media')
+	function uploadPath($path, $mkdir = true, $dir = 'media')
 	{
 		if(empty($dir)) {
 			throw new Exception("ERR_UPLOAD_DIR", 400);
