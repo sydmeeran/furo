@@ -210,7 +210,7 @@ class ResizeImage
 		// New path
 		$p = $_SERVER['DOCUMENT_ROOT'].'/'.$dir.'/'.$d1.'/'.$d2.'/'.$d3;
 		if($mkdir == true) {
-			mkdir($p, 0775, true);
+			mkdir($p, 0777, true);
 		}
 		return $p.'/'.$h.'.'.$ext;
 	}
