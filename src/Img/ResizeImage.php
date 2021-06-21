@@ -182,6 +182,36 @@ class ResizeImage
 	{
 		return floor(($this->origWidth/$this->origHeight)*$height);
 	}
+
+	/**
+	 * Get upload file path and create dir structure
+	 *
+	 * @param  string $path - Path to image or file
+	 *
+	 * @return Path to file
+	 */
+	function uploadPath($path, $dir = 'media', $mkdir = true)
+	{
+		if(empty($dir)) {
+			throw new Exception("ERR_UPLOAD_DIR", 400);
+		}
+
+		$ext = pathinfo($path, PATHINFO_EXTENSION);
+		$dir = rtrim($dir,'/');
+		$dir = ltrim($dir,'/');
+
+		$h = md5(uniqid() . $path);
+
+		$d1 = substr($h,0,2);
+		$d2 = substr($h,2,2);
+		$d3 = substr($h,4,2);
+
+		$new = $_SERVER['DOCUMENT_ROOT'].'/'.$dir.'/'.$d1.'/'.$d2.'/'.$d3;
+		if($mkdir == true) {
+			mkdir($new, 0775, true);
+		}
+		return $new.'/'.$h.'.'.$ext;
+	}
 }
 /*
 use Furo\Img\ResizeImage;
