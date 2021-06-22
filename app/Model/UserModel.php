@@ -17,6 +17,8 @@ class UserModel extends User
 				if(property_exists(UserModel::class, $k) && in_array($k, $this->allowedColumns)) {
 					// Update user table column
 					Db::query("UPDATE user SET $k = :v WHERE id = :id", [':v' => $v, ':id' => $user_id]);
+				} else {
+					throw new Exception("ERR_USER_PROPERTY", 402);
 				}
 			}
 		} else {
