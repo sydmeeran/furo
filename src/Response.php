@@ -1,13 +1,28 @@
 <?php
 namespace Furo;
 
+use Exception;
 use Furo\Entities\Header;
 
 class Response
 {
+	static $httpCode = 200;
+	static $httpMessage = 'OK';
+
 	static function json($arr)
 	{
 		Header::json();
+		return json_encode($arr);
+	}
+
+	static function jsonStatus($arr)
+	{
+		Header::json();
+		$arr['status'] = [
+			'code' => self::$httpCode,
+			'message' => self::$httpMessage
+		];
+
 		return json_encode($arr);
 	}
 
@@ -35,6 +50,17 @@ class Response
 		return $str;
 	}
 
+	static function httpError($e)
+	{
+		if(is_a($e, 'Exception')) {
+			self::$httpCode = $e->getCode();
+			self::$httpMessage = $e->getMessage();
+			self::httpCode(self::$httpCode, self::$httpMessage);
+		}
+
+		return new self();
+	}
+
 	static function httpCodeCustom($code = 200, $text = 'OK')
 	{
 		$protocol = (isset($_SERVER['SERVER_PROTOCOL']) ? $_SERVER['SERVER_PROTOCOL'] : 'HTTP/1.0');
@@ -42,7 +68,7 @@ class Response
 		return new self();
 	}
 
-	static function httpCode($code = 200)
+	static function httpCode($code = 200, $msg = '')
 	{
 		$code = (string) $code;
 		$protocol = (isset($_SERVER['SERVER_PROTOCOL']) ? $_SERVER['SERVER_PROTOCOL'] : 'HTTP/1.0');
@@ -124,7 +150,7 @@ class Response
 				case 599: $text = 'Network connect timeout error'; break;
 				// Default errors: mysql, mail etc.
 				default:
-					$text = "Unprocessable Entity ($code)";
+					$text = "Unprocessable Entity ($code|$msg)";
 					$code = 422;
 				break;
 			}
