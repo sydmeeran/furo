@@ -14,7 +14,35 @@ class Middleware
 		$user = $_SESSION['user'];
 
 		if(empty($user)) {
-			throw new Exception('ERR_SESSION_USER', 401);
+			throw new Exception('ERR_USER', 401);
+		}
+
+		if(!in_array($user->role,['user'])) {
+			throw new Exception('ERR_USER_ROLE', 401);
+		}
+
+		if(!in_array($user->status, ['ACTIVE'])) {
+			throw new Exception('ERR_USER_STATUS', 401);
+		}
+
+		Request::setEnv('user', $user);
+	}
+
+	// Session user
+	static function IsLoggedStuff()
+	{
+		$user = $_SESSION['user'];
+
+		if(empty($user)) {
+			throw new Exception('ERR_USER', 401);
+		}
+
+		if(!in_array($user->role, ['admin','worker'])) {
+			throw new Exception('ERR_USER_ROLE', 401);
+		}
+
+		if(!in_array($user->status, ['ACTIVE'])) {
+			throw new Exception('ERR_USER_STATUS', 401);
 		}
 
 		Request::setEnv('user', $user);
