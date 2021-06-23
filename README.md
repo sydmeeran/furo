@@ -1,7 +1,6 @@
 # Furo php micro framework
 Php micro framework for rest api with mysql database connection, routes middleware, smtp email with phpmailer and rest api session authentication.
 
-
 ### Install with git
 ```sh
 # get with git
@@ -138,7 +137,77 @@ ALTER DATABASE app DEFAULT COLLATE utf8_unicode_ci;
 ALTER TABLE app.user CONVERT TO CHARACTER SET utf8 COLLATE utf8_unicode_ci;
 ```
 
-### Curl post
+### Examples
+See in public directory
+
+### Run in browser
+```
+php -S localhost:8000 -t /var/www/html/furo.xx/public
+```
+
+### Local host domain
+nano /etc/hosts
+```
+# Add line
+127.0.0.1 www.furo.xx furo.xx
+```
+
+### Run with Nginx virtualhost
+nano /etc/nginx/sites-available/default
+```cnf
+# Add to file
+# /etc/nginx/sites-available/default
+
+server {
+	# port
+	listen 80;
+	listen [::]:80;
+	# server
+	server_name furo.xx;
+	root /var/www/html/furo.xx/public;
+	index index.php;
+	# all files
+	location / {
+		try_files $uri $uri/ /index.php?url=$uri&$args;
+	}
+	# php files
+	location ~ \.php$ {
+		include snippets/fastcgi-php.conf;
+		fastcgi_pass unix:/run/php/php7.3-fpm.sock;
+	}
+	# cache
+	location ~ /(Cache|cache|.cache|.git|sql|install|vendor) {
+		deny all;
+		return 404;
+	}
+	# settings
+	charset utf-8;
+	disable_symlinks off;
+	client_max_body_size 100M;
+	# tls redirect
+	# return 301 https://$host$request_uri;
+	# return 301 https://furo.xx$request_uri;
+}
+```
+
+### Clear fastcgi cache
+```php
+<?php
+# Purge cache php
+shell_exec("rm -Rf /tmp/php_fastcgi_cache/*");
+```
+
+### Http error codes
+```
+2xx success status codes confirm that your request worked as expected
+4xx error status codes indicate an error because of the information provided (e.g., a required parameter was omitted)
+5xx error status codes are rare and indicate an error with servers
+```
+
+### All http error codes
+https://github.com/wowpowhub/furo/blob/main/src/Response.php
+
+### Curl examples
 ```sh
 # Test api
 curl -X POST -d 'pass=password&email=user@woo.xx' http://furo.xx/client/register
@@ -167,83 +236,4 @@ curl -X POST -c /tmp/cookie.txt http://furo.xx/user/1 -v -i
 curl -X POST -b /tmp/cookie.txt http://furo.xx/user/1 -v -i
 # Show headers and execution time
 time curl -i http://furo.xx
-```
-
-### Purge fastcgi cache
-```php
-<?php
-# Purge cache php
-shell_exec("rm -Rf /tmp/php_fastcgi_cache/*");
-?>
-```
-
-### Examples
-See in public directory
-
-### Run in browser
-```
-php -S localhost:8000 -t /var/www/html/furo.xx/public
-```
-
-### Local host domain
-nano /etc/hosts
-```
-# Add line
-127.0.0.1 www.furo.xx furo.xx
-```
-
-### Run with Nginx virtualhost
-nano /etc/nginx/sites-available/default
-```cnf
-# Add to file
-# /etc/nginx/sites-available/default
-
-server {
-	listen 80;
-	listen [::]:80;
-	server_name furo.xx;
-	root /var/www/html/furo.xx/public;
-	index index.php;
-	location / {
-		try_files $uri $uri/ /index.php?url=$uri&$args;
-	}
-	location ~ \.php$ {
-		include snippets/fastcgi-php.conf;
-		fastcgi_pass unix:/var/run/php/php7.3-fpm.sock;
-	}
-	location ~ /(Cache|cache|.cache|.git) {
-		deny all;
-		return 404;
-	}
-	disable_symlinks off;
-	client_max_body_size 100M;
-	# Tls redirect
-	# return 301 https://$host$request_uri;
-	# return 301 https://furo.xx$request_uri;
-}
-```
-
-### Http codes
-https://github.com/wowpowhub/furo/blob/main/src/Response.php
-```
-2xx success status codes confirm that your request worked as expected
-4xx error status codes indicate an error because of the information provided (e.g., a required parameter was omitted)
-5xx error status codes are rare and indicate an error with servers
-
-200 - OK				Everything worked as expected.
-201 - Created				Record has been created.
-
-400 - Bad Request			The request was unacceptable, often due to missing a required parameter.
-401 - Unauthorized			No valid API key provided.
-402 - Request Failed			The parameters were valid but the request failed.
-403 - Forbidden				The API key doesn't have permissions to perform the request.
-404 - Not Found				The requested resource doesn't exist.
-409 - Conflict				The request conflicts with another request (perhaps due to using the same idempotent key).
-422 - Unprocessable Entity		Unknown error or app exceptions.
-429 - Too Many Requests			Too many requests hit the API too quickly. We recommend an exponential backoff of your requests.
-
-500 - Server Errors			Something went wrong on server.
-502 - Server Errors
-503 - Server Errors
-504 - Server Errors
 ```
