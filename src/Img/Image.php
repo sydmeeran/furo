@@ -7,6 +7,13 @@ use Imagine\Image\Point;
 use Imagine\Image\ImageInterface;
 use Imagine\Imagick\Imagine;
 
+/**
+ * Image manipulation
+ * Require:
+ * - php composer: imagine/imagine
+ * - php extension: php-gd
+ * - php extension: php-imagick
+ */
 class Image
 {
 	protected $Path = '';
