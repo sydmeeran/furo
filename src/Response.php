@@ -22,7 +22,6 @@ class Response
 			'code' => self::$httpCode,
 			'message' => self::$httpMessage
 		];
-
 		return json_encode($arr);
 	}
 
@@ -155,10 +154,8 @@ class Response
 					$code = 422;
 				break;
 			}
-
 			header($protocol . ' ' . $code . ' ' . $text);
 		}
-
 		return new self();
 	}
 }
