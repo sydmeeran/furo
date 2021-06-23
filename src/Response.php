@@ -50,25 +50,23 @@ class Response
 		return $str;
 	}
 
-	static function httpError($e)
+	static function header($str)
 	{
-		if(is_a($e, 'Exception')) {
-			self::$httpCode = $e->getCode();
-			self::$httpMessage = $e->getMessage();
+		header($str);
+		return new self();
+	}
+
+	static function httpError(?Exception $ex)
+	{
+		if(is_a($ex, 'Exception')) {
+			self::$httpCode = $ex->getCode();
+			self::$httpMessage = $ex->getMessage();
 			self::httpCode(self::$httpCode, self::$httpMessage);
 		}
-
 		return new self();
 	}
 
-	static function httpCodeCustom($code = 200, $text = 'OK')
-	{
-		$protocol = (isset($_SERVER['SERVER_PROTOCOL']) ? $_SERVER['SERVER_PROTOCOL'] : 'HTTP/1.0');
-		header($protocol . ' ' . $code . ' ' . $text);
-		return new self();
-	}
-
-	static function httpCode($code = 200, $msg = '')
+	static function httpCode($code = 200, $error_msg = '')
 	{
 		$code = (string) $code;
 		$protocol = (isset($_SERVER['SERVER_PROTOCOL']) ? $_SERVER['SERVER_PROTOCOL'] : 'HTTP/1.0');
@@ -150,7 +148,10 @@ class Response
 				case 599: $text = 'Network connect timeout error'; break;
 				// Default errors: mysql, mail etc.
 				default:
-					$text = "Unprocessable Entity ($code|$msg)";
+					$text = "Unprocessable Entity ($code)";
+					if(!empty($error_msg)) {
+						$text = $error_msg;
+					}
 					$code = 422;
 				break;
 			}
