@@ -15,7 +15,7 @@ class Response
 		return json_encode($arr);
 	}
 
-	static function jsonStatus($arr)
+	static function jsonStatus($arr = [])
 	{
 		Header::json();
 		$arr['status'] = [
