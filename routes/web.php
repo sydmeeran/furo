@@ -32,7 +32,7 @@ try
 
 	// Get url params
 	Router::get('/user/{id}', 'App\Http\Home', 'Index');
-	Router::get('/user/{id}/post/{name}', 'App\Http\Home', 'Index', [ 'App\Middleware\Middleware::SetLoggedUser' ]);
+	Router::get('/user/{id}/post/{name}', 'App\Http\Home', 'Index', [ 'App\Middleware\Middleware::IsLogged' ]);
 
 	// Api auth
 	Router::post('/client/login', 'App\Http\Api\Client\Auth', 'SignIn');
