@@ -8,8 +8,23 @@ use Furo\Entities\Header;
 
 class Middleware
 {
-	// Session user
+	// Session logged user
 	static function IsLogged()
+	{
+		$user = $_SESSION['user'];
+
+		if(empty($user)) {
+			throw new Exception('ERR_SESS_USER', 401);
+		}
+
+		if(!in_array($user->status, ['ACTIVE'])) {
+			throw new Exception('ERR_SESS_USER_STATUS', 401);
+		}
+
+		Request::setEnv('user', $user);
+	}
+
+	static function IsLoggedUser()
 	{
 		$user = $_SESSION['user'];
 
