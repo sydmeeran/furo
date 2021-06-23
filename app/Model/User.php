@@ -43,4 +43,17 @@ class User extends SetGet
 			throw new Exception("ERR_USER_ID", 402);
 		}
 	}
+
+	public function get($user_id, $clear_pass = true)
+	{
+		if($user_id > 0) {
+			$u = Db::query("SELECT * FROM user WHERE id = :id", ['id' => $user_id])->fetchObj();
+			if($clear_pass) {
+				unset($u->pass);
+			}
+			return $u;
+		} else {
+			throw new Exception("ERR_USER_ID", 402);
+		}
+	}
 }
