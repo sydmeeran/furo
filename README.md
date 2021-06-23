@@ -62,12 +62,14 @@ try
 }
 catch(Exception $e)
 {
-	echo Response::httpCode($e->getCode())::json([
-		'status' => [
-			'code' => Status::ERR,
-			'message' => $e->getMessage()
-		]
-	]);
+	echo Response::httpError($e)::jsonStatus();
+
+	// echo Response::httpCode($e->getCode())::json([
+	// 	'status' => [
+	// 		'code' => Status::ERR,
+	// 		'message' => $e->getMessage()
+	// 	]
+	// ]);
 }
 ?>
 ```
