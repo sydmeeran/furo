@@ -1,0 +1,100 @@
+# main.cf
+
+# Localhost send only with tls
+
+myhostname = domain.name.here
+myorigin = $myhostname
+# myorigin = /etc/mailname
+
+smtpd_banner = $myhostname ESMTP $mail_name
+biff = no
+append_dot_mydomain = no
+# delay_warning_time = 4h
+readme_directory = no
+compatibility_level = 2
+
+# TLS parameters
+# smtpd_tls_cert_file=/etc/ssl/certs/ssl-cert-snakeoil.pem
+# smtpd_tls_key_file=/etc/ssl/private/ssl-cert-snakeoil.key
+# smtp_tls_cert_file=/etc/ssl/certs/ssl-cert-snakeoil.pem
+# smtp_tls_key_file=/etc/ssl/private/ssl-cert-snakeoil.key
+
+# From server to others
+smtp_tls_cert_file=/etc/letsencrypt/live/domain.name.here/fullchain.pem
+smtp_tls_key_file=/etc/letsencrypt/live/domain.name.here/privkey.pem
+smtp_tls_CAfile=/etc/ssl/certs/ca-certificates.crt
+smtp_tls_security_level = encrypt
+smtp_tls_note_starttls_offer = yes
+smtp_tls_session_cache_timeout = 3600s
+smtp_tls_loglevel = 1
+smtp_tls_auth_only = no
+smtp_tls_session_cache_database = btree:/var/lib/postfix/smtp_scache
+
+# To server
+smtpd_tls_cert_file=/etc/letsencrypt/live/domain.name.here/fullchain.pem
+smtpd_tls_key_file=/etc/letsencrypt/live/domain.name.here/privkey.pem
+smtpd_tls_CAfile=/etc/ssl/certs/ca-certificates.crt
+smtpd_tls_security_level = may
+smtpd_tls_note_starttls_offer = yes
+smtpd_tls_session_cache_timeout = 3600s
+smtpd_tls_loglevel = 1
+smtpd_tls_auth_only = no
+smtpd_use_tls=yes
+smtpd_tls_session_cache_database = btree:/var/lib/postfix/smtpd_scache
+
+# Relay ban
+smtpd_relay_restrictions = permit_mynetworks, permit_sasl_authenticated, reject_unauth_destination, defer_unauth_destination
+
+# Block clients that speak too early.
+smtpd_data_restrictions = reject_unauth_pipelining
+
+# Recipient
+smtpd_recipient_restrictions = permit_mynetworks, reject_unknown_helo_hostname, reject_unauth_destination, defer_unauth_destination
+
+# Aliases
+alias_maps = hash:/etc/aliases
+alias_database = hash:/etc/aliases
+
+# Smtp domains list
+# mydestination = $myhostname, localhost
+
+# Send only smtp
+mydestination = localhost
+
+# Disable relay
+relayhost =
+
+# Settings
+mynetworks = 127.0.0.0/8 [::1]/128
+mailbox_size_limit = 0
+recipient_delimiter = +
+
+# Service
+# inet_protocols = all
+# inet_interfaces = all
+
+# When ipv6 disabled
+inet_interfaces = 127.0.0.1
+inet_protocols = ipv4
+
+# Home dir mails
+# home_mailbox = Mailbox
+# home_mailbox = Maildir/
+# home_mailbox = Mail/mbox
+
+# Virtual mailbox aliases
+# virtual_alias_domains = woo.xx sell.xx test.xx
+# virtual_alias_maps = hash:/etc/postfix/virtual
+# strict_mailbox_ownership = no
+# Virtual mailboxes (/etc/postfix/virtual):
+# @boo.xx boo
+# @woo.xx boo
+# @boo.localhost boo
+# Virtual aliases, set and reload postfix
+# postmap /etc/postfix/virtual
+# postfix reload
+
+# Mails in file
+# cat /var/mail/boo
+
+# See /usr/share/postfix/main.cf.dist for a commented, more complete version
