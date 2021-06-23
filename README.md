@@ -76,30 +76,47 @@ use Furo\Db;
 use Furo\Mail;
 use Furo\Request;
 use Furo\Response;
+use Furo\Img\ResizeImage;
+use Exception;
 
 class Home
 {
 	function Index()
 	{
-		// $rows = Db::query("SELECT * FROM user WHERE id != :id", [':id' => 0])->fetchAllObj();
-		$rows = Db::queryCache("SELECT * FROM user WHERE id != :id", [':id' => 0]);
+		$ex = null;
+		$image = '';
 
-		// Fetch custom class obj
-		$rows = Db::query("SELECT * FROM user WHERE id != :id ORDER BY id DESC LIMIT 2", [':id' => 0])->fetchAllObj("App\Model\UserModel");
+		try
+		{
+			$rows = Db::query(
+				"SELECT * FROM user WHERE id != :id ORDER BY id DESC LIMIT 2",
+				[':id' => 0]
+			)->fetchAllObj();
 
-		// Send email
-		$html = Mail::theme('App\Entities\EmailTheme', 'Welcome', ['{USER}' => 'Marry Doe']);
-		Mail::send('mail@furo.xx','Hello email', $html);
+			// Unique image path
+			$res = new ResizeImage('marker.png');
+			$image = $res->uploadPath('marker.webp', false);
 
-		return Response::json([
-			'name' => 'Furo php router',
-			'posts' => 11,
-			'url_id' => Request::urlParam('id'),
-			'url_name' => Request::urlParam('name'),
-			'query_id' => Request::get('id'),
-			'rows' => $rows,
-			'bearer' => Request::getEnv('TOKEN'),
-			'sent_email' => (int) $mail
+			// Send email
+			$html = Mail::theme('App\Entities\EmailTheme', 'Welcome', ['{USER}' => 'Marry Doe']);
+			Mail::send('boo@woo.xx','Welcome email', $html);
+
+		} catch (Exception $e) {
+			$ex = $e;
+		}
+
+		return Response::httpError($ex)::jsonStatus([
+			'response' => [
+				'name' => 'Furo',
+				'desc' => 'Hello from php router!',
+				'unique_image' => $image,
+				'url_id' => Request::urlParam('id'),
+				'url_name' => Request::urlParam('name'),
+				'query_id' => Request::get('id'),
+				'logged_user' => Request::getEnv('user'),
+				'bearer' => Request::bearerToken(),
+				'rows' => $rows
+			]
 		]);
 	}
 }
