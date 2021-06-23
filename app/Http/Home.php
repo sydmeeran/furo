@@ -77,7 +77,7 @@ class Home
 			'url_id' => Request::urlParam('id'),
 			'url_name' => Request::urlParam('name'),
 			'query_id' => Request::get('id'),
-			'logged_user' => Request::getEnv('logged_user'),
+			'logged_user' => Request::getEnv('user'),
 			'bearer' => Request::bearerToken(),
 			'data' => $rows
 		]);
