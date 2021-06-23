@@ -24,27 +24,8 @@ class Middleware
 		Request::setEnv('user', $user);
 	}
 
-	static function IsLoggedUser()
-	{
-		$user = $_SESSION['user'];
-
-		if(empty($user)) {
-			throw new Exception('ERR_SESS_USER', 401);
-		}
-
-		if(!in_array($user->role,['user'])) {
-			throw new Exception('ERR_SESS_USER_ROLE', 401);
-		}
-
-		if(!in_array($user->status, ['ACTIVE'])) {
-			throw new Exception('ERR_SESS_USER_STATUS', 401);
-		}
-
-		Request::setEnv('user', $user);
-	}
-
 	// Session user
-	static function IsLoggedStuff()
+	static function IsLoggedStuff($roles = ['admin','worker'])
 	{
 		$user = $_SESSION['user'];
 
@@ -52,7 +33,7 @@ class Middleware
 			throw new Exception('ERR_SESS_USER', 401);
 		}
 
-		if(!in_array($user->role, ['admin','worker'])) {
+		if(!in_array($user->role, $roles)) {
 			throw new Exception('ERR_SESS_USER_ROLE', 401);
 		}
 
@@ -61,11 +42,6 @@ class Middleware
 		}
 
 		Request::setEnv('user', $user);
-	}
-
-	static function SetLoggedUser()
-	{
-		Request::setEnv('logged_user', (array) $_SESSION['user']);
 	}
 
 	// Header authorization token
