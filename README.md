@@ -6,6 +6,9 @@ Php micro framework for rest api with mysql database connection, routes middlewa
 # get with git
 git clone https://github.com/wowpowhub/furo.git /var/www/html/furo.xx
 
+# create user php-fpm pool
+sudo useradd -m www-furo
+
 # permissions
 chown -R your-user-name:www-data /var/www/html/furo.xx
 chmod -R 2775 /var/www/html/furo.xx
@@ -188,6 +191,13 @@ server {
 	# return 301 https://$host$request_uri;
 	# return 301 https://furo.xx$request_uri;
 }
+```
+
+### Php-fpm, nginx test config
+```sh
+sudo php-fpm7.3 -t
+sudo php-fpm7.3 -tt
+sudo nginx -t
 ```
 
 ### Clear fastcgi cache
