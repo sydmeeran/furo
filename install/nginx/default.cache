@@ -1,7 +1,7 @@
 # Create pool.d domain config from pool-furo.xx.conf and limux user
 # sudo useradd -m www-furo
 # Permissions
-# chown -R www-data:www-furo /var/www/html/furo.xx
+# chown -R your-user-name:www-data /var/www/html/furo.xx
 # chmod -R 2775 /var/www/html/furo.xx
 
 http {
