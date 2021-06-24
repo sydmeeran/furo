@@ -1,20 +1,23 @@
+# create .well-known directory first
+
 server {
 	listen 80;
 	listen [::]:80;
 	root /var/www/html;
 	index index.html index.php;
-	server_name gmap.xx;
+	server_name furo.xx www.furo.xx;
 
-	# allow .well-known
+	# create .well-known directory
 	location / {
 		try_files $uri $uri/ =404;
 		# try_files $uri $uri/ index.php;
 	}
 
-	# php
+	# redirect all php to non-www https
 	location ~ \.php$ {
-		# redirect all php to https
-		rewrite .* https://$host$request_uri last;
+		rewrite .* https://furo.xx$request_uri last;
+		# rewrite .* https://$host$request_uri last;
+		# rewrite .* https://$host$request_uri permanent;
 	}
 }
 
@@ -23,7 +26,7 @@ server {
 	listen [::]:443 ssl http2;
 	root /var/www/html;
 	index index.php;
-	server_name gmap.xx;
+	server_name furo.xx www.furo.xx;
 
 	ssl_certificate     /etc/ssl/certs/ssl-cert-snakeoil.pem;
 	ssl_certificate_key /etc/ssl/private/ssl-cert-snakeoil.key;
