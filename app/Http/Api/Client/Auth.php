@@ -24,30 +24,35 @@ class Auth
 	 */
 	function SignIn()
 	{
-		// $id = (int) Request::get('id'); // $_GET['id']
-		$email = Request::post('email'); // $_POST['email']
-		$pass = Request::post('pass'); // $_POST['pass']
+		$ex = null;
 
-		Valid::email($email);
-		Valid::pass($pass);
+		try {
+			// $id = (int) Request::get('id'); // $_GET['id']
+			$email = Request::post('email'); // $_POST['email']
+			$pass = Request::post('pass'); // $_POST['pass']
 
-		$user = Db::query("SELECT * FROM user WHERE email = :e", [':e' => $email])->fetchObj();
+			Valid::email($email);
+			Valid::pass($pass);
 
-		if($user->pass == self::hash($pass)) {
-			if($user->status == 'ACTIVE') {
-				unset($user->pass);
-				$_SESSION['user'] = $user;
+			$user = Db::query("SELECT * FROM user WHERE email = :e", [':e' => $email])->fetchObj();
+
+			if($user->pass == self::hash($pass)) {
+				if($user->status == 'ACTIVE') {
+					unset($user->pass);
+					$_SESSION['user'] = $user;
+				} else {
+					throw new Exception("ERR_ACTIVATION", 402);
+				}
 			} else {
-				throw new Exception("ERR_ACTIVATION", 402);
+				throw new Exception("ERR_CREDENTIALS", 401);
 			}
-		} else {
-			throw new Exception("ERR_CREDENTIALS", 401);
+		} catch (Exception $e) {
+			$ex = $e;
 		}
 
-		return Response::json([
-			'status' => [
-				'code' => Status::OK,
-				'message' => 'authenticated'
+		return Response::httpError($ex)::jsonStatus([
+			'res' => [
+				'msg' => 'authenticated'
 			]
 		]);
 	}
@@ -61,10 +66,8 @@ class Auth
 	 */
 	function SignUp()
 	{
-		$httpCode = 201;
-		$statusCode = Status::OK;
-		$statusMsg = 'account_created';
-		$userId = 0;
+		$ex = null;
+		$uid = 0;
 
 		try {
 			$email = $_POST['email'];
@@ -75,26 +78,23 @@ class Auth
 			Valid::pass($pass);
 			self::accountExists($email);
 
-			$userId = Db::query("INSERT INTO user(email,pass,code,username) VALUES(:e,:p,:c,UUID_SHORT())", [':e' => $email, ':p' => self::hash($pass), ':c' => $code])->lastInsertId();
+			$uid = Db::query("INSERT INTO user(email,pass,code,username) VALUES(:e,:p,:c,UUID_SHORT())", [':e' => $email, ':p' => self::hash($pass), ':c' => $code])->lastInsertId();
 
 			$html = Mail::theme('App\Entities\EmailTheme', 'Activation', ['{EMAIL}' => $email, '{CODE}' => $code]);
 			Mail::send($email, 'Activation email', $html);
 
 		} catch (Exception $e) {
-			$statusCode = Status::ERR;
-			$statusMsg = $e->getMessage();
-			$httpCode = $e->getCode();
+			$ex = $e;
 
-			if($userId > 0) {
+			if($uid > 0) {
 				// If account has been created, after error email send delete account
-				self::deleteAccount($userId);
+				self::deleteAccount($uid);
 			}
 		}
 
-		return Response::httpCode($httpCode)::json([
-			'status' => [
-				'code' => $statusCode,
-				'message' => $statusMsg
+		return Response::httpError($ex)::jsonStatus([
+			'res' => [
+				'msg' => 'not_authenticated'
 			]
 		]);
 	}
@@ -107,27 +107,31 @@ class Auth
 	 */
 	function Password()
 	{
-		$email = $_POST['email'];
-		$pass = $_POST['pass'];
-		$pass1 = $_POST['pass1'];
-		$pass2 = $_POST['pass2'];
+		try  {
+			$email = $_POST['email'];
+			$pass = $_POST['pass'];
+			$pass1 = $_POST['pass1'];
+			$pass2 = $_POST['pass2'];
 
-		Valid::email($email);
-		Valid::pass($pass);
-		Valid::pass($pass1);
-		Valid::pass($pass2);
-		Valid::repeatPass($pass1, $pass2);
-		self::accountNotExists($email);
+			Valid::email($email);
+			Valid::pass($pass);
+			Valid::pass($pass1);
+			Valid::pass($pass2);
+			Valid::repeatPass($pass1, $pass2);
+			self::accountNotExists($email);
 
-		Db::query("UPDATE user SET pass = :p WHERE email = :e AND pass = :cp", [':e' => $email, ':p' => md5($pass1), ':cp' => md5($pass)])->rowCount();
+			$cnt = Db::query("UPDATE user SET pass = :p WHERE email = :e AND pass = :cp", [':e' => $email, ':p' => md5($pass1), ':cp' => md5($pass)])->rowCount();
 
-		$html = Mail::theme('App\Entities\EmailTheme', 'Password', ['{EMAIL}' => $email, '{PASS}' => $pass1]);
-		Mail::send($email, 'New password', $html);
+			$html = Mail::theme('App\Entities\EmailTheme', 'Password', ['{EMAIL}' => $email, '{PASS}' => $pass1]);
+			Mail::send($email, 'New password', $html);
 
-		return Response::json([
-			'status' => [
-				'code' => Status::OK,
-				'message' => 'password_changed'
+		} catch (Exception $e) {
+			$ex = $e;
+		}
+
+		return Response::httpError($ex)::jsonStatus([
+			'res' => [
+				'msg' => 'password_changed'
 			]
 		]);
 	}
@@ -140,17 +144,21 @@ class Auth
 	 */
 	function Activation()
 	{
-		$code = Request::urlParam('code');
+		try {
+			$code = Request::urlParam('code');
 
-		self::codeNotExists($code);
-		self::accountActiv($code);
+			self::codeNotExists($code);
+			self::accountActiv($code);
 
-		$nr = Db::query("UPDATE user SET status = 'ACTIVE' WHERE status = 'ONHOLD' AND code = :c", [':c' => $code])->rowCount();
+			$cnt = Db::query("UPDATE user SET status = 'ACTIVE' WHERE status = 'ONHOLD' AND code = :c", [':c' => $code])->rowCount();
 
-		return Response::json([
-			'status' => [
-				'code' => Status::OK,
-				'message' => 'account_activated'
+		} catch (Exception $e) {
+			$ex = $e;
+		}
+
+		return Response::httpError($ex)::jsonStatus([
+			'res' => [
+				'msg' => 'password_changed'
 			]
 		]);
 	}
