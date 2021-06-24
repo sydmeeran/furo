@@ -1,3 +1,6 @@
+# Create pool.d domain config from pool-furo.xx.conf and limux user
+# sudo useradd -m www-furo
+
 http {
 	# log format
 	log_format compression '$remote_addr - $remote_user [$time_local] "$request" $status $body_bytes_sent "$http_referer" "$http_user_agent" "$gzip_ratio"';
@@ -58,7 +61,7 @@ http {
 			fastcgi_no_cache $skip_cache;
 
 			include snippets/fastcgi-php.conf;
-			fastcgi_pass unix:/var/run/php/php7.3-fpm.sock;
+			fastcgi_pass unix:/run/php/php7.3-fpm-furo.xx.sock;
 		}
 
 		location ~* .(webp|jpg|jpeg|png|gif|ico|css|js)$ {
