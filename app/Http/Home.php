@@ -28,7 +28,7 @@ class Home
 
 			// Send email
 			$html = Mail::theme('App\Entities\EmailTheme', 'Welcome', ['{USER}' => 'Marry Doe']);
-			Mail::send('boo@woo.xx','Welcome email', $html);
+			Mail::send('fresh@woo.xx','Welcome email', $html);
 
 		} catch (Exception $e) {
 			$ex = $e;
