@@ -37,12 +37,8 @@ class Auth
 			$user = Db::query("SELECT * FROM user WHERE email = :e AND status = 'ACTIVE'", [':e' => $email])->fetchObj();
 
 			if($user->pass == self::hash($pass)) {
-				if($user->status == 'ACTIVE') {
-					unset($user->pass);
-					$_SESSION['user'] = $user;
-				} else {
-					throw new Exception("ERR_ACTIVATION", 402);
-				}
+				unset($user->pass);
+				$_SESSION['user'] = $user;
 			} else {
 				throw new Exception("ERR_CREDENTIALS", 401);
 			}
