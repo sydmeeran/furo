@@ -34,7 +34,7 @@ class Auth
 			Valid::email($email);
 			Valid::pass($pass);
 
-			$user = Db::query("SELECT * FROM user WHERE email = :e", [':e' => $email])->fetchObj();
+			$user = Db::query("SELECT * FROM user WHERE email = :e AND status = 'ACTIVE'", [':e' => $email])->fetchObj();
 
 			if($user->pass == self::hash($pass)) {
 				if($user->status == 'ACTIVE') {
