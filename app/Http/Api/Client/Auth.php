@@ -57,7 +57,7 @@ class Auth
 	 * Register user
 	 * curl -X POST -d 'pass=password&email=u1@woo.xx' http://php.xx/client/register
 	 *
-	 * @return void
+	 * @return string Json string
 	 * @throws Exception
 	 */
 	function SignUp()
@@ -99,7 +99,7 @@ class Auth
 	 * Change password
 	 * curl -X POST -d 'pass=password&pass1=password1&pass2=password1&email=u1@woo.xx' http://php.xx/client/password
 	 *
-	 * @return void
+	 * @return string Json string
 	 */
 	function Password()
 	{
@@ -136,7 +136,7 @@ class Auth
 	 * Activate user account
 	 * curl -X GET http://php.xx/client/activation/{code} -v
 	 *
-	 * @return void
+	 * @return string Json string
 	 */
 	function Activation()
 	{
