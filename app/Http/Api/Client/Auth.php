@@ -25,6 +25,7 @@ class Auth
 	function SignIn()
 	{
 		$ex = null;
+		$msg = 'authenticated';
 
 		try {
 			// $id = (int) Request::get('id'); // $_GET['id']
@@ -44,11 +45,12 @@ class Auth
 			}
 		} catch (Exception $e) {
 			$ex = $e;
+			$msg = 'not_authenticated';
 		}
 
 		return Response::httpError($ex)::jsonStatus([
 			'res' => [
-				'msg' => 'authenticated'
+				'msg' => $msg
 			]
 		]);
 	}
@@ -63,6 +65,7 @@ class Auth
 	function SignUp()
 	{
 		$ex = null;
+		$msg = 'account_created';
 		$uid = 0;
 
 		try {
@@ -81,6 +84,7 @@ class Auth
 
 		} catch (Exception $e) {
 			$ex = $e;
+			$msg = 'account_not_created';
 
 			if($uid > 0) {
 				// If account has been created, after error email send delete account
@@ -90,7 +94,7 @@ class Auth
 
 		return Response::httpError($ex)::jsonStatus([
 			'res' => [
-				'msg' => 'not_authenticated'
+				'msg' => $msg
 			]
 		]);
 	}
@@ -103,6 +107,9 @@ class Auth
 	 */
 	function Password()
 	{
+		$ex = null;
+		$msg = 'password_updated';
+
 		try  {
 			$email = $_POST['email'];
 			$pass = $_POST['pass'];
@@ -123,11 +130,12 @@ class Auth
 
 		} catch (Exception $e) {
 			$ex = $e;
+			$msg = 'password_not_updated';
 		}
 
 		return Response::httpError($ex)::jsonStatus([
 			'res' => [
-				'msg' => 'password_changed'
+				'msg' => $msg
 			]
 		]);
 	}
@@ -140,6 +148,9 @@ class Auth
 	 */
 	function Activation()
 	{
+		$es = null;
+		$msg = 'account_activated';
+
 		try {
 			$code = Request::urlParam('code');
 
@@ -150,11 +161,12 @@ class Auth
 
 		} catch (Exception $e) {
 			$ex = $e;
+			$msg = 'account_not_activated';
 		}
 
 		return Response::httpError($ex)::jsonStatus([
 			'res' => [
-				'msg' => 'password_changed'
+				'msg' => $msg
 			]
 		]);
 	}
