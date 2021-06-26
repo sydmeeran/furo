@@ -16,9 +16,9 @@ class Auth
 {
 	/**
 	 * Login user
-	 * curl -X POST -d 'pass=password&email=u1@woo.xx' -c /tmp/cookies.txt http://php.xx/client/login -v
+	 * curl -X POST -d 'pass=password&email=u1@woo.xx' -c /tmp/cookies.txt http://furo.xx/client/login -v
 	 * Active session user (enable in routes.php )
-	 * curl -X POST -d 'id=1' -b /tmp/cookies.txt http://php.xx/client/active -v -i
+	 * curl -X POST -d 'id=1' -b /tmp/cookies.txt http://furo.xx/client/active -v -i
 	 *
 	 * @return string Logged user json data
 	 */
@@ -57,7 +57,7 @@ class Auth
 
 	/**
 	 * Register user
-	 * curl -X POST -d 'pass=password&email=u1@woo.xx' http://php.xx/client/register
+	 * curl -X POST -d 'pass=password&email=u1@woo.xx' http://furo.xx/client/register
 	 *
 	 * @return string Json string
 	 * @throws Exception
@@ -100,12 +100,51 @@ class Auth
 	}
 
 	/**
-	 * Change password
-	 * curl -X POST -d 'pass=password&pass1=password1&pass2=password1&email=u1@woo.xx' http://php.xx/client/password
+	 * Reset password
+	 * curl -X POST -d 'email=u1@woo.xx' http://furo.xx/client/password
 	 *
 	 * @return string Json string
 	 */
 	function Password()
+	{
+		$ex = null;
+		$msg = 'password_updated';
+
+		try  {
+			$email = $_POST['email'];
+
+			Valid::email($email);
+			self::accountNotExists($email);
+
+			$pass = uniqid();
+			$cnt = Db::query("UPDATE user SET pass = :p WHERE email = :e", [':e' => $email, ':p' => md5($pass)])->rowCount();
+
+			if($cnt > 0) {
+				$html = Mail::theme('App\Entities\EmailTheme', 'Password', ['{EMAIL}' => $email, '{PASS}' => $pass]);
+				Mail::send($email, 'New password', $html);
+			} else {
+				throw new Exception("ERR_PASSWORD_UPDATE", 400);
+			}
+
+		} catch (Exception $e) {
+			$ex = $e;
+			$msg = 'password_not_updated';
+		}
+
+		return Response::httpError($ex)::jsonStatus([
+			'res' => [
+				'msg' => $msg
+			]
+		]);
+	}
+
+	/**
+	 * Change password
+	 * curl -X POST -d 'pass=password&pass1=password1&pass2=password1&email=u1@woo.xx' http://furo.xx/api/reset/password
+	 *
+	 * @return string Json string
+	 */
+	function ChangePassword()
 	{
 		$ex = null;
 		$msg = 'password_updated';
@@ -119,14 +158,14 @@ class Auth
 			Valid::email($email);
 			Valid::pass($pass);
 			Valid::pass($pass1);
-			Valid::pass($pass2);
 			Valid::repeatPass($pass1, $pass2);
 			self::accountNotExists($email);
 
 			$cnt = Db::query("UPDATE user SET pass = :p WHERE email = :e AND pass = :cp", [':e' => $email, ':p' => md5($pass1), ':cp' => md5($pass)])->rowCount();
 
-			$html = Mail::theme('App\Entities\EmailTheme', 'Password', ['{EMAIL}' => $email, '{PASS}' => $pass1]);
-			Mail::send($email, 'New password', $html);
+			if($cnt == 0) {
+				throw new Exception("ERR_CURRENT_PASSWORD", 400);
+			}
 
 		} catch (Exception $e) {
 			$ex = $e;
@@ -142,7 +181,7 @@ class Auth
 
 	/**
 	 * Activate user account
-	 * curl -X GET http://php.xx/client/activation/{code} -v
+	 * curl -X GET http://furo.xx/client/activation/{code} -v
 	 *
 	 * @return string Json string
 	 */
