@@ -27,7 +27,7 @@ class Model
 	 */
 	function id($column)
 	{
-		$this->id = $column;
+		$this->id = (string) $column;
 	}
 
 	/**
@@ -38,7 +38,7 @@ class Model
 	 */
 	function table($str)
 	{
-		$this->table = $str;
+		$this->table = (string) $str;
 	}
 
 	/**
@@ -48,8 +48,11 @@ class Model
 	 * @param integer $offset Records offset
 	 * @return void
 	 */
-	function limit(int $limit, int $offset = 0)
+	function limit($limit, $offset = 0)
 	{
+		$limit = (int) $limit;
+		$offset = (int) $offset;
+
 		if($limit > 0) {
 			$this->sql_limit = "LIMIT $limit OFFSET $offset ";
 		}
@@ -91,7 +94,7 @@ class Model
 	 */
 	function search($str)
 	{
-		$this->search = str_replace(" ", "|", $str);
+		$this->search = str_replace(" ", "|", (string) $str);
 		if(!empty($this->search)) {
 			$this->params[':regexp'] = trim($this->search," %");
 			$this->sql_search = "WHERE CONCAT_WS(' ',".implode(",",$this->columns).") REGEXP :regexp ";
@@ -109,7 +112,7 @@ class Model
 	function join($sql)
 	{
 		if(!empty($sql)) {
-			$this->sql_join = $sql;
+			$this->sql_join = (string) $sql;
 		}
 	}
 
@@ -124,7 +127,7 @@ class Model
 	function select($columns = '*')
 	{
 		if(!empty($columns)) {
-			$this->sql_columns = $columns;
+			$this->sql_columns = (string) $columns;
 		}
 	}
 
@@ -136,7 +139,7 @@ class Model
 	 */
 	function columns($arr)
 	{
-		$this->columns = $arr;
+		$this->columns = (array) $arr;
 	}
 
 	/**
@@ -146,7 +149,7 @@ class Model
 	 *
 	 * @return object Table row object
 	 */
-	function get(int $id)
+	function get($id)
 	{
 		return Db::query("SELECT $this->sql_columns FROM $this->table $this->sql_join WHERE $this->id = :id", [':id' => $id])->fetchObj();
 	}
