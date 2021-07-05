@@ -17,6 +17,7 @@ class Model
 	protected $sql_order = '';
 	protected $sql_join = '';
 	protected $sql_columns = '*';
+	protected $sql_search_value = '';
 	protected $columns = ['username','name','location','mobile','about','www'];
 
 	/**
@@ -94,19 +95,62 @@ class Model
 	 */
 	function search($str)
 	{
-		$this->search = str_replace(" ", "|", (string) $str);
-		if(!empty($this->search)) {
-			$this->params[':regexp'] = trim($this->search," %");
-			$this->sql_search = "WHERE CONCAT_WS(' ',".implode(",",$this->columns).") REGEXP :regexp ";
+		if(!empty($str)) {
+			$add = "WHERE ";
+			if(!empty($this->sql_search)) { $add = "AND "; }
+
+			$this->search = str_replace(" ", "|", $str);
+			if(!empty($this->search)) {
+				$this->params[':regexp'] = trim($this->search," %");
+				$this->sql_search .= "$add CONCAT_WS(' ',".implode(",",$this->columns).") REGEXP :regexp ";
+			}
 		}
 	}
 
 	/**
-	 * Join sql
+	 * Range search
+	 * x >= from and x <= to
+	 *
+	 * @param string $col Columna
+	 * @param integer $from From value
+	 * @param integer $to To value
+	 * @return void
+	 */
+	function range_in($col = 'price', $from = 0, $to = 0, $continue = false)
+	{
+		$id = uniqid();
+		$this->params[':from_'.$id] = $from;
+		$this->params[':to_'.$id] = $to;
+		$add = "WHERE ";
+		if(!empty($this->sql_search)) { $add = "AND "; }
+		$this->sql_search .= "$add $col >= :from_$id AND $col <= :to_$id ";
+	}
+
+	/**
+	 * Range search
+	 * x <= from and x >= to
+	 *
+	 * @param string $col Columna
+	 * @param integer $from From value
+	 * @param integer $to To value
+	 * @return void
+	 */
+	function range_out($col = 'price', $from = 0, $to = 0)
+	{
+		$id = uniqid();
+		$this->params[':from_'.$id] = $from;
+		$this->params[':to_'.$id] = $to;
+		$add = "WHERE ";
+		if(!empty($this->sql_search)) { $add = "AND "; }
+		$this->sql_search .= "$add $col <= :from_$id OR $col >= :to_$id ";
+
+	}
+
+	/**
+	 * Join sql, use join() with select() for columns sustomization
 	 *
 	 * @param string $sql Mysql query sql join part:
 	 * LEFT JOIN user_token ON user.id = user_token.user_id
-	 *
 	 * @return void
 	 */
 	function join($sql)
@@ -119,9 +163,8 @@ class Model
 	/**
 	 * Select rows list
 	 *
-	 * @param string $columns  Select query column list coma separated:
+	 * @param string $columns  Select a comma-separated list of query columns:
 	 * user.*, user_token.token
-	 *
 	 * @return void
 	 */
 	function select($columns = '*')
@@ -146,7 +189,6 @@ class Model
 	 * Get record with id
 	 *
 	 * @param int $id Row id
-	 *
 	 * @return object Table row object
 	 */
 	function get($id)
@@ -159,7 +201,6 @@ class Model
 	 *
 	 * @param string $name Column name
 	 * @param string $value Column value
-	 *
 	 * @return object Table row object
 	 */
 	function getc($name, $value)
@@ -175,7 +216,6 @@ class Model
 	 * @param int $limit Rows on page
 	 * @param int $offset Rows offset
 	 * @param int $search Search word
-	 *
 	 * @return array Array with objects
 	 */
 	function all()
@@ -187,7 +227,6 @@ class Model
 	 * Count all records (always after search method)
 	 *
 	 * @param int $search Search word
-	 *
 	 * @return int Counted rows
 	 */
 	function count()
@@ -203,7 +242,6 @@ class Model
 	 * Save or update record in database
 	 *
 	 * @param array $arr Self class object
-	 *
 	 * @return void
 	 */
 	function update(array $arr, int $uid)
@@ -221,7 +259,6 @@ class Model
 	 * Delete record
 	 *
 	 * @param array $arr Post array
-	 *
 	 * @return int Deleted rows
 	 */
 	function delete(int $id)
@@ -234,7 +271,6 @@ class Model
 	 *
 	 * @param string $name Column name
 	 * @param string $value Column value
-	 *
 	 * @return int Deleted rows
 	 */
 	function deletec($name, $value)
@@ -246,17 +282,26 @@ class Model
 	}
 
 	/**
+	 * Sql query fetch all records
+	 *
+	 * @param int $sql Mysql query string
+	 * @return array Array with objects
+	 */
+	function sql($sql, $params)
+	{
+		return Db::query($sql, $params)->fetchAllObj();
+	}
+
+	/**
 	 * Add record to table
 	 *
 	 * @param array $arr Post array
-	 *
 	 * @return int Last inserted id
 	 */
 	function add(array $arr)
 	{
 		// Override this method
 		throw new Exception("OVERRIDE_MODEL_ADD_METHOD", 402);
-
 		return 0;
 	}
 }
