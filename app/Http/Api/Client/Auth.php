@@ -1,13 +1,13 @@
 <?php
 namespace App\Http\Api\Client;
 
+use Exception;
 use Furo\Db;
 use Furo\Mail;
 use Furo\Request;
 use Furo\Response;
 use Furo\Entities\Valid;
-use Furo\Entities\Status;
-use Exception;
+use Furo\Entities\Header;
 
 /**
  * Authentication
@@ -40,6 +40,8 @@ class Auth
 			if($user->pass == self::hash($pass)) {
 				unset($user->pass);
 				$_SESSION['user'] = $user;
+				// Get user IP address
+				self::userIp();
 			} else {
 				throw new Exception("ERR_CREDENTIALS", 401);
 			}
@@ -292,5 +294,13 @@ class Auth
 	protected static function hash($str)
 	{
 		return md5($str);
+	}
+
+	protected static function userIp()
+	{
+		$_SESSION['user_ip'][] = $_SERVER['REMOTE_ADDR'];
+		if(!empty(Header::getHeader('X-Real-Ip'))) {
+			$_SESSION['user_ip'][] = Header::getHeader('X-Real-Ip');
+		}
 	}
 }
