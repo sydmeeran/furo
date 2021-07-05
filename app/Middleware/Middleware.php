@@ -12,13 +12,18 @@ class Middleware
 	static function IsLogged()
 	{
 		$user = $_SESSION['user'];
+		$user_ip = $_SESSION['user_ip'];
 
-		if(empty($user)) {
-			throw new Exception('ERR_SESS_USER', 401);
+		if(!in_array($_SERVER['REMOTE_ADDR'], $user_ip)) {
+			throw new Exception('ERR_AUTH_IP', 401);
+		}
+
+		if(empty($user) || $user->id <= 0 || empty($user_ip)) {
+			throw new Exception('ERR_NOT_AUTHENTICATED', 401);
 		}
 
 		if(!in_array($user->status, ['ACTIVE'])) {
-			throw new Exception('ERR_SESS_USER_STATUS', 401);
+			throw new Exception('ERR_NOT_ACTIVATED', 401);
 		}
 
 		Request::setEnv('user', $user);
@@ -28,17 +33,22 @@ class Middleware
 	static function IsLoggedStuff($roles = ['admin','worker'])
 	{
 		$user = $_SESSION['user'];
+		$user_ip = $_SESSION['user_ip'];
 
-		if(empty($user)) {
-			throw new Exception('ERR_SESS_USER', 401);
+		if(!in_array($_SERVER['REMOTE_ADDR'], $user_ip)) {
+			throw new Exception('ERR_AUTH_IP', 401);
+		}
+
+		if(empty($user) || $user->id <= 0 || empty($user_ip)) {
+			throw new Exception('ERR_NOT_AUTHENTICATED', 401);
 		}
 
 		if(!in_array($user->role, $roles)) {
-			throw new Exception('ERR_SESS_USER_ROLE', 401);
+			throw new Exception('ERR_AUTH_ROLE', 401);
 		}
 
 		if(!in_array($user->status, ['ACTIVE'])) {
-			throw new Exception('ERR_SESS_USER_STATUS', 401);
+			throw new Exception('ERR_NOT_ACTIVATED', 401);
 		}
 
 		Request::setEnv('user', $user);
