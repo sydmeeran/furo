@@ -40,7 +40,13 @@ try
 	Router::post('/client/password', 'App\Http\Api\Client\Auth', 'Password');
 	Router::get('/client/activation/{code}', 'App\Http\Api\Client\Auth', 'Activation');
 
-	// Api dev only testing (show logged user seeion data) !!!
+	// Api logged user profil
+	Router::get('/api/profil', 'App\Http\Sample\SampleController', 'GetId', ['App\Middleware\Middleware::IsLogged']);
+	Router::post('/api/profil/get', 'App\Http\Sample\SampleController', 'Get', ['App\Middleware\Middleware::IsLogged']);
+	Router::post('/api/profil/update', 'App\Http\Sample\SampleController', 'Update', ['App\Middleware\Middleware::IsLogged']);
+	Router::delete('/api/profil/delete', 'App\Http\Sample\SampleController', 'Delete', ['App\Middleware\Middleware::IsLogged']);
+
+	// Api testing (show logged user seeion data) !!!
 	// Router::post('/client/active', 'App\Http\Api\Client\Auth', 'Session');
 
 	// Error page
