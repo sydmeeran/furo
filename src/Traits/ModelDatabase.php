@@ -348,7 +348,7 @@ trait ModelDatabase
 		}
 		$sql = trim($sql, ',');
 		$sql_param = trim($sql_param, ',');
-		echo $this->sql_insert = 'INSERT INTO '.$this->table .'('.$sql.') VALUES('.$sql_param.')';
+		$this->sql_insert = 'INSERT INTO '.$this->table .'('.$sql.') VALUES('.$sql_param.')';
 		return Db::query($this->sql_insert,$this->params_insert)->lastInsertId();
 	}
 }
