@@ -7,7 +7,7 @@ namespace Furo\Traits;
 // use Furo\Entities\Valid;
 
 /**
- * Create and validate object from $_POST request or PDO fetch class
+ * Create and validate object from $_POST request or PDO fetch class (public variables)
  *
  * use Furo\Traits\ModelVariable;
  * use Furo\Traits\ModelDatabase;
@@ -51,43 +51,30 @@ namespace Furo\Traits;
  * echo $o->email;
  * echo $o->email();
  *
- * // Db
- * $o->columns(['username','name'])->table('addon')->limit(12,1);
- * $o->where('username', 'ben', '!=')->search('adm');
- * $o->range_out('price',26.0,96.0);
- * print_r($o->all());
+ * // Get data
+ * $o = new SampleModel();
  * $user = $o->get(1);
+ * $list = $o->all();
  *
- * // $o->desc();
- * // $o->update(['name' => 'ADMIN'], 321);
- * // $o->select("user.*, user_token.token");
- * // $o->join("LEFT JOIN user_token ON user.id = user_token.user_id");
+ * // Examples
+ * $o->columns(['username','name'])->table('addon')->limit(25,0);
+ * $o->where('username', 'ben', '!=')->search('admin');
+ * $o->range_out('price',26.0,96.0);
+ *
+ * $o->desc();
+ * $o->update(['name' => 'ADMIN'], $user->id);
+ * $o->select("user.*, user_token.token");
+ * $o->join("LEFT JOIN user_token ON user.id = user_token.user_id");
  */
 trait ModelVariable
 {
 	/**
 	 * Add object variables
 	 */
-	// protected $username;
 	// protected $email;
-	// protected $time;
-	// protected $code;
-	// protected $role;
-	// protected $name;
-	// protected $about;
-	// protected $www;
-	// protected $location;
 
 	/**
-	 * Add object property validation, when error throw exception
-	 */
-	// protected function username($str)
-	// {
-	// 	Valid::alias($str);
-	// }
-
-	/**
-	 * Add object property validation, when error throw exception
+	 * Add object variable validation, when error throw exception
 	 */
 	// protected function email($str)
 	// {
@@ -99,7 +86,7 @@ trait ModelVariable
 	 * Is utilized for reading data from inaccessible
 	 * (protected or private) or non-existing properties.
 	 */
-	public function __get($name)
+	final public function __get($name)
 	{
 		if (property_exists($this, $name)) {
 			return $this->$name;
@@ -111,7 +98,7 @@ trait ModelVariable
 	 *  Is run when writing data to inaccessible
 	 * (protected or private) or non-existing properties.
 	 */
-	public function __set($name, $value)
+	final public function __set($name, $value)
 	{
 		if (property_exists($this, $name)) {
 			// Validate
@@ -126,7 +113,18 @@ trait ModelVariable
 	 * Is triggered when invoking inaccessible
 	 * methods in an object context.
 	 */
-	public function __call($name, $args) {
+	final public function __call($name, $args) {
+		if (property_exists($this, $name)) {
+			return $this->$name;
+		}
+	}
+
+	/**
+	 * __callStatic()
+	 * Is triggered when invoking inaccessible static
+	 * methods in an object context.
+	 */
+	final public function __callStatic($name, $args) {
 		if (property_exists($this, $name)) {
 			return $this->$name;
 		}
