@@ -1,35 +1,21 @@
 <?php
 namespace Furo\Traits;
 
-use Exception;
 use Furo\Db;
 
 /**
- * Create and validate object from $_POST request or PDO fetch class
+ * Db model class
  *
- * use Furo\Traits\ModelVariable;
  * use Furo\Traits\ModelDatabase;
- *
- * $_POST['email'] = 'sample@email.com';
- *
+
  * class SampleModel
  * {
- * 		trait ModelVariable; // Validation
  * 		trait ModelDatabase; // Model methods (optional)
- *
- * 		protected $email;
- *
- * 		protected function email($str) {
- * 			// Validate email here, on error throw exception
- * 			// throw new Exception('ERR_EMAIL', 400);
- * 		}
- *
  * 		function __construct()
  *		{
  *			$this->table('user');
  *			$this->columns(['name','username','email', 'price']);
  *		}
- *
  *		function add(array $arr)
  *		{
  *			// Override this method
@@ -38,28 +24,20 @@ use Furo\Db;
  *		}
  * }
  *
+ * // Get data
  * $o = new SampleModel();
- *
- * // Validate
- * foreach($_POST as $property => $value) {
- * 		$o->$property = $value;
- * }
- *
- * // Properties
- * echo $o->email;
- * echo $o->email();
- *
- * // Db
- * $o->columns(['username','name'])->table('addon')->limit(12,1);
- * $o->where('username', 'ben', '!=')->search('adm');
- * $o->range_out('price',26.0,96.0);
- * print_r($o->all());
  * $user = $o->get(1);
+ * $list = $o->all();
  *
- * // $o->desc();
- * // $o->update(['name' => 'ADMIN'], 321);
- * // $o->select("user.*, user_token.token");
- * // $o->join("LEFT JOIN user_token ON user.id = user_token.user_id");
+ * // Examples
+ * $o->columns(['username','name'])->table('addon')->limit(25,0);
+ * $o->where('username', 'ben', '!=')->search('admin');
+ * $o->range_out('price',26.0,96.0);
+ *
+ * $o->desc();
+ * $o->update(['name' => 'ADMIN'], $user->id);
+ * $o->select("user.*, user_token.token");
+ * $o->join("LEFT JOIN user_token ON user.id = user_token.user_id");
  */
 trait ModelDatabase
 {
@@ -69,12 +47,14 @@ trait ModelDatabase
 	protected $offset = 0;
 	protected $search = '';
 	protected $params = [];
+	protected $params_insert = [];
 	protected $sql_limit = '';
 	protected $sql_search = '';
 	protected $sql_order = '';
 	protected $sql_join = '';
 	protected $sql_columns = '*';
 	protected $sql_search_value = '';
+	protected $sql_insert = '';
 	protected $columns = ['username','name','location','mobile','about','www'];
 
 	/**
@@ -83,7 +63,7 @@ trait ModelDatabase
 	 * @param string $column Primary key column
 	 * @return object
 	 */
-	function id($column)
+	final function id($column)
 	{
 		$this->id = (string) $column;
 		return $this;
@@ -95,7 +75,7 @@ trait ModelDatabase
 	 * @param string $str Table name
 	 * @return object
 	 */
-	function table($str)
+	final function table($str)
 	{
 		$this->table = (string) $str;
 		return $this;
@@ -107,7 +87,7 @@ trait ModelDatabase
 	 * @param array $arr Update, search allowed columns
 	 * @return object
 	 */
-	function columns($arr)
+	final function columns($arr)
 	{
 		$this->columns = (array) $arr;
 		return $this;
@@ -120,7 +100,7 @@ trait ModelDatabase
 	 * @param integer $offset Records offset
 	 * @return object
 	 */
-	function limit($limit, $offset = 0)
+	final function limit($limit, $offset = 0)
 	{
 		$limit = (int) $limit;
 		$offset = (int) $offset;
@@ -137,7 +117,7 @@ trait ModelDatabase
 	 * @param string $column Sort by column
 	 * @return object
 	 */
-	function desc($column = '')
+	final function desc($column = '')
 	{
 		if(empty($column)) {
 			$column = $this->id;
@@ -152,7 +132,7 @@ trait ModelDatabase
 	 * @param string $str Search strings
 	 * @return object
 	 */
-	function search($str)
+	final function search($str)
 	{
 		if(!empty($str)) {
 			$add = "WHERE";
@@ -175,7 +155,7 @@ trait ModelDatabase
 	 * @param string $operator
 	 * @return object
 	 */
-	function where($col, $val, $operator = '=')
+	final function where($col, $val, $operator = '=')
 	{
 		$id = uniqid();
 		$add = "WHERE ";
@@ -194,7 +174,7 @@ trait ModelDatabase
 	 * @param integer $to To value
 	 * @return object
 	 */
-	function range_in($col = 'price', $from = 0, $to = 0)
+	final function range_in($col = 'price', $from = 0, $to = 0)
 	{
 		$id = uniqid();
 		$add = "WHERE";
@@ -214,7 +194,7 @@ trait ModelDatabase
 	 * @param integer $to To value
 	 * @return object
 	 */
-	function range_out($col = 'price', $from = 0, $to = 0)
+	final function range_out($col = 'price', $from = 0, $to = 0)
 	{
 		$id = uniqid();
 		$add = "WHERE";
@@ -232,7 +212,7 @@ trait ModelDatabase
 	 * LEFT JOIN user_token ON user.id = user_token.user_id
 	 * @return object
 	 */
-	function join($sql)
+	final function join($sql)
 	{
 		if(!empty($sql)) {
 			$this->sql_join = (string) $sql;
@@ -247,7 +227,7 @@ trait ModelDatabase
 	 * user.*, user_token.token
 	 * @return object
 	 */
-	function select($columns = '*')
+	final function select($columns = '*')
 	{
 		if(!empty($columns)) {
 			$this->sql_columns = (string) $columns;
@@ -261,7 +241,7 @@ trait ModelDatabase
 	 * @param int $id Row id
 	 * @return object Table row object
 	 */
-	function get($id)
+	final function get($id)
 	{
 		return Db::query("SELECT $this->sql_columns FROM $this->table $this->sql_join WHERE $this->id = :id", [':id' => $id])->fetchObj();
 	}
@@ -273,7 +253,7 @@ trait ModelDatabase
 	 * @param string $value Column value
 	 * @return object Table row object
 	 */
-	function getc($name, $value)
+	final function getc($name, $value)
 	{
 		if(in_array($name, $this->columns) && !empty($value)) {
 			return Db::query("SELECT $this->sql_columns FROM $this->table $this->sql_join WHERE $name = :v", [':v' => $value])->fetchObj();
@@ -288,7 +268,7 @@ trait ModelDatabase
 	 * @param int $search Search word
 	 * @return array Array with objects
 	 */
-	function all()
+	final function all()
 	{
 		return Db::query("SELECT $this->sql_columns FROM $this->table $this->sql_join $this->sql_search $this->sql_order $this->sql_limit", $this->params)->fetchAllObj();
 	}
@@ -299,7 +279,7 @@ trait ModelDatabase
 	 * @param int $search Search word
 	 * @return int Counted rows
 	 */
-	function count()
+	final function count()
 	{
 		$o = Db::query("SELECT COUNT(*) as cnt FROM $this->table $this->sql_join $this->sql_search", $this->params)->fetchObj();
 		if($o->cnt >= 0) {
@@ -314,7 +294,7 @@ trait ModelDatabase
 	 * @param array $arr Self class object
 	 * @return void
 	 */
-	function update(array $arr, int $uid)
+	final function update(array $arr, int $uid)
 	{
 		if($uid > 0) {
 			foreach ($arr as $col => $v) {
@@ -331,7 +311,7 @@ trait ModelDatabase
 	 * @param array $arr Post array
 	 * @return int Deleted rows
 	 */
-	function delete(int $id)
+	final function delete(int $id)
 	{
 		return Db::query("DELETE FROM $this->table WHERE $this->id = :id", [':id' => $id])->rowCount();
 	}
@@ -343,7 +323,7 @@ trait ModelDatabase
 	 * @param string $value Column value
 	 * @return int Deleted rows
 	 */
-	function deletec($name, $value)
+	final function deletec($name, $value)
 	{
 		if(in_array($name, $this->columns) && !empty($value)) {
 			return Db::query("DELETE FROM $this->table WHERE $name = :v", [':v' => $value])->rowCount();
@@ -352,26 +332,23 @@ trait ModelDatabase
 	}
 
 	/**
-	 * Sql query fetch all records
+	 * Insert row into table
 	 *
-	 * @param int $sql Mysql query string
-	 * @return array Array with objects
-	 */
-	function sql($sql, $params)
-	{
-		return Db::query($sql, $params)->fetchAllObj();
-	}
-
-	/**
-	 * Add record to table
-	 *
-	 * @param array $arr Post array
+	 * @param array $arr Array with pairs (key,value)
 	 * @return int Last inserted id
 	 */
-	function add(array $arr)
+	function insert(array $arr)
 	{
-		// Override this method
-		throw new Exception("OVERRIDE_MODEL_ADD_METHOD", 402);
-		return 0;
+		$sql = '';
+		$sql_param = '';
+		foreach ($arr as $k => $v) {
+			$sql .= $k.',';
+			$sql_param .= ':'.$k.',';
+			$this->params_insert[':'.$k] = $v;
+		}
+		$sql = trim($sql, ',');
+		$sql_param = trim($sql_param, ',');
+		echo $this->sql_insert = 'INSERT INTO '.$this->table .'('.$sql.') VALUES('.$sql_param.')';
+		return Db::query($this->sql_insert,$this->params_insert)->lastInsertId();
 	}
 }
