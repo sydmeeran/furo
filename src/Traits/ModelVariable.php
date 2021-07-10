@@ -1,6 +1,8 @@
 <?php
 namespace Furo\Traits;
 
+use Exception;
+
 /**
  * Add validation class
  */
@@ -29,7 +31,7 @@ namespace Furo\Traits;
  * 		function __construct()
  *		{
  *			$this->table('user');
- *			$this->columns(['name','username','email', 'price']);
+ *			$this->columns(['name','username','email','price']);
  *		}
  *
  *		function add(array $arr)
@@ -82,6 +84,22 @@ trait ModelVariable
 	// }
 
 	/**
+	 * Allowed variables list for insert
+	 *
+	 * @var array
+	 */
+	public $model_variables = [];
+
+	/**
+	 * Get validated variables
+	 *
+	 * @return array Variables array
+	 */
+	final public function variables() {
+		return $this->model_variables;
+	}
+
+	/**
 	 * __get()
 	 * Is utilized for reading data from inaccessible
 	 * (protected or private) or non-existing properties.
@@ -89,7 +107,7 @@ trait ModelVariable
 	final public function __get($name)
 	{
 		if (property_exists($this, $name)) {
-			return $this->$name;
+			return $this->model_variables[$name];
 		}
 	}
 
@@ -100,11 +118,19 @@ trait ModelVariable
 	 */
 	final public function __set($name, $value)
 	{
-		if (property_exists($this, $name)) {
-			// Validate
-			$this->$name($value);
-			// Set
-			$this->$name = $value;
+		// Secure variables
+		if (preg_match('/^model_/i', $name) == 0) {
+			// If exists
+			if (property_exists($this, $name)) {
+				// Validate
+				if (method_exists($this, $name)) {
+					$this->$name($value);
+				}
+				// Set
+				$this->model_variables[$name] = $value;
+			}
+		} else {
+			throw new Exception("ERR_PROPERTY_NAME_FORBIDDEN", 400);
 		}
 	}
 

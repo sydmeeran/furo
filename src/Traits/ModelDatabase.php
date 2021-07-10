@@ -1,6 +1,7 @@
 <?php
 namespace Furo\Traits;
 
+use Exception;
 use Furo\Db;
 
 /**
@@ -14,7 +15,7 @@ use Furo\Db;
  * 		function __construct()
  *		{
  *			$this->table('user');
- *			$this->columns(['name','username','email', 'price']);
+ *			$this->columns(['name','username','email','price']);
  *		}
  *		function add(array $arr)
  *		{
@@ -41,21 +42,21 @@ use Furo\Db;
  */
 trait ModelDatabase
 {
-	protected $id = 'id';
-	protected $table = 'user';
-	protected $limit = 0;
-	protected $offset = 0;
-	protected $search = '';
-	protected $params = [];
-	protected $params_insert = [];
-	protected $sql_limit = '';
-	protected $sql_search = '';
-	protected $sql_order = '';
-	protected $sql_join = '';
-	protected $sql_columns = '*';
-	protected $sql_search_value = '';
-	protected $sql_insert = '';
-	protected $columns = ['username','name','location','mobile','about','www'];
+	protected $model_id = 'id';
+	protected $model_table = 'user';
+	protected $model_limit = 0;
+	protected $model_offset = 0;
+	protected $model_search = '';
+	protected $model_params = [];
+	protected $model_params_insert = [];
+	protected $model_sql_limit = '';
+	protected $model_sql_search = '';
+	protected $model_sql_order = '';
+	protected $model_sql_join = '';
+	protected $model_sql_columns = '*';
+	protected $model_sql_search_value = '';
+	protected $model_sql_insert = '';
+	protected $model_columns = ['username','name','location','mobile','about','www'];
 
 	/**
 	 * Id
@@ -63,9 +64,9 @@ trait ModelDatabase
 	 * @param string $column Primary key column
 	 * @return object
 	 */
-	final function id($column)
+	final function primary_id($column)
 	{
-		$this->id = (string) $column;
+		$this->model_id = (string) $column;
 		return $this;
 	}
 
@@ -77,7 +78,7 @@ trait ModelDatabase
 	 */
 	final function table($str)
 	{
-		$this->table = (string) $str;
+		$this->model_table = (string) $str;
 		return $this;
 	}
 
@@ -89,7 +90,7 @@ trait ModelDatabase
 	 */
 	final function columns($arr)
 	{
-		$this->columns = (array) $arr;
+		$this->model_columns = (array) $arr;
 		return $this;
 	}
 
@@ -106,7 +107,7 @@ trait ModelDatabase
 		$offset = (int) $offset;
 
 		if($limit > 0) {
-			$this->sql_limit = "LIMIT $limit OFFSET $offset ";
+			$this->model_sql_limit = "LIMIT $limit OFFSET $offset ";
 		}
 		return $this;
 	}
@@ -120,9 +121,9 @@ trait ModelDatabase
 	final function desc($column = '')
 	{
 		if(empty($column)) {
-			$column = $this->id;
+			$column = $this->model_id;
 		}
-		$this->sql_order = " ORDER BY $column DESC";
+		$this->model_sql_order = " ORDER BY $column DESC";
 		return $this;
 	}
 
@@ -136,12 +137,12 @@ trait ModelDatabase
 	{
 		if(!empty($str)) {
 			$add = "WHERE";
-			if(!empty($this->sql_search)) { $add = "AND"; }
+			if(!empty($this->model_sql_search)) { $add = "AND"; }
 
-			$this->search = str_replace(" ", "|", $str);
-			if(!empty($this->search)) {
-				$this->params[':regexp'] = trim($this->search," %");
-				$this->sql_search .= "$add CONCAT_WS(' ',".implode(",",$this->columns).") REGEXP :regexp ";
+			$this->model_search = str_replace(" ", "|", $str);
+			if(!empty($this->model_search)) {
+				$this->model_params[':regexp'] = trim($this->model_search," %");
+				$this->model_sql_search .= "$add CONCAT_WS(' ',".implode(",",$this->model_columns).") REGEXP :regexp ";
 			}
 		}
 		return $this;
@@ -159,9 +160,9 @@ trait ModelDatabase
 	{
 		$id = uniqid();
 		$add = "WHERE ";
-		$this->params[':val_'.$id] = $val;
-		if(!empty($this->sql_search)) { $add = "AND "; }
-		$this->sql_search .= "$add $col $operator :val_$id ";
+		$this->model_params[':val_'.$id] = $val;
+		if(!empty($this->model_sql_search)) { $add = "AND "; }
+		$this->model_sql_search .= "$add $col $operator :val_$id ";
 		return $this;
 	}
 
@@ -178,10 +179,10 @@ trait ModelDatabase
 	{
 		$id = uniqid();
 		$add = "WHERE";
-		$this->params[':from_'.$id] = $from;
-		$this->params[':to_'.$id] = $to;
-		if(!empty($this->sql_search)) { $add = "AND"; }
-		$this->sql_search .= "$add $col >= :from_$id AND $col <= :to_$id ";
+		$this->model_params[':from_'.$id] = $from;
+		$this->model_params[':to_'.$id] = $to;
+		if(!empty($this->model_sql_search)) { $add = "AND"; }
+		$this->model_sql_search .= "$add $col >= :from_$id AND $col <= :to_$id ";
 		return $this;
 	}
 
@@ -198,10 +199,10 @@ trait ModelDatabase
 	{
 		$id = uniqid();
 		$add = "WHERE";
-		$this->params[':from_'.$id] = $from;
-		$this->params[':to_'.$id] = $to;
-		if(!empty($this->sql_search)) { $add = "AND"; }
-		$this->sql_search .= "$add ($col <= :from_$id OR $col >= :to_$id) ";
+		$this->model_params[':from_'.$id] = $from;
+		$this->model_params[':to_'.$id] = $to;
+		if(!empty($this->model_sql_search)) { $add = "AND"; }
+		$this->model_sql_search .= "$add ($col <= :from_$id OR $col >= :to_$id) ";
 		return $this;
 	}
 
@@ -215,7 +216,7 @@ trait ModelDatabase
 	final function join($sql)
 	{
 		if(!empty($sql)) {
-			$this->sql_join = (string) $sql;
+			$this->model_sql_join = (string) $sql;
 		}
 		return $this;
 	}
@@ -230,7 +231,7 @@ trait ModelDatabase
 	final function select($columns = '*')
 	{
 		if(!empty($columns)) {
-			$this->sql_columns = (string) $columns;
+			$this->model_sql_columns = (string) $columns;
 		}
 		return $this;
 	}
@@ -243,7 +244,7 @@ trait ModelDatabase
 	 */
 	final function get($id)
 	{
-		return Db::query("SELECT $this->sql_columns FROM $this->table $this->sql_join WHERE $this->id = :id", [':id' => $id])->fetchObj();
+		return Db::query("SELECT $this->model_sql_columns FROM $this->model_table $this->model_sql_join WHERE $this->model_id = :id", [':id' => $id])->fetchObj();
 	}
 
 	/**
@@ -255,8 +256,8 @@ trait ModelDatabase
 	 */
 	final function getc($name, $value)
 	{
-		if(in_array($name, $this->columns) && !empty($value)) {
-			return Db::query("SELECT $this->sql_columns FROM $this->table $this->sql_join WHERE $name = :v", [':v' => $value])->fetchObj();
+		if(in_array($name, $this->model_columns) && !empty($value)) {
+			return Db::query("SELECT $this->model_sql_columns FROM $this->model_table $this->model_sql_join WHERE $name = :v", [':v' => $value])->fetchObj();
 		}
 	}
 
@@ -270,7 +271,7 @@ trait ModelDatabase
 	 */
 	final function all()
 	{
-		return Db::query("SELECT $this->sql_columns FROM $this->table $this->sql_join $this->sql_search $this->sql_order $this->sql_limit", $this->params)->fetchAllObj();
+		return Db::query("SELECT $this->model_sql_columns FROM $this->model_table $this->model_sql_join $this->model_sql_search $this->model_sql_order $this->model_sql_limit", $this->model_params)->fetchAllObj();
 	}
 
 	/**
@@ -281,7 +282,7 @@ trait ModelDatabase
 	 */
 	final function count()
 	{
-		$o = Db::query("SELECT COUNT(*) as cnt FROM $this->table $this->sql_join $this->sql_search", $this->params)->fetchObj();
+		$o = Db::query("SELECT COUNT(*) as cnt FROM $this->model_table $this->model_sql_join $this->model_sql_search", $this->model_params)->fetchObj();
 		if($o->cnt >= 0) {
 			return $o->cnt;
 		}
@@ -298,8 +299,8 @@ trait ModelDatabase
 	{
 		if($uid > 0) {
 			foreach ($arr as $col => $v) {
-				if(in_array($col, $this->columns)) {
-					Db::query("UPDATE $this->table SET $col = :v WHERE id = :id", [':v' => $v, ':id' => $uid])->rowCount();
+				if(in_array($col, $this->model_columns)) {
+					Db::query("UPDATE $this->model_table SET $col = :v WHERE id = :id", [':v' => $v, ':id' => $uid])->rowCount();
 				}
 			}
 		}
@@ -313,7 +314,7 @@ trait ModelDatabase
 	 */
 	final function delete(int $id)
 	{
-		return Db::query("DELETE FROM $this->table WHERE $this->id = :id", [':id' => $id])->rowCount();
+		return Db::query("DELETE FROM $this->model_table WHERE $this->model_id = :id", [':id' => $id])->rowCount();
 	}
 
 	/**
@@ -325,8 +326,8 @@ trait ModelDatabase
 	 */
 	final function deletec($name, $value)
 	{
-		if(in_array($name, $this->columns) && !empty($value)) {
-			return Db::query("DELETE FROM $this->table WHERE $name = :v", [':v' => $value])->rowCount();
+		if(in_array($name, $this->model_columns) && !empty($value)) {
+			return Db::query("DELETE FROM $this->model_table WHERE $name = :v", [':v' => $value])->rowCount();
 		}
 		return 0;
 	}
@@ -337,18 +338,18 @@ trait ModelDatabase
 	 * @param array $arr Array with pairs (key,value)
 	 * @return int Last inserted id
 	 */
-	function insert(array $arr)
+	final function insert(array $arr = [])
 	{
 		$sql = '';
 		$sql_param = '';
 		foreach ($arr as $k => $v) {
 			$sql .= $k.',';
 			$sql_param .= ':'.$k.',';
-			$this->params_insert[':'.$k] = $v;
+			$this->model_params_insert[':'.$k] = $v;
 		}
 		$sql = trim($sql, ',');
 		$sql_param = trim($sql_param, ',');
-		$this->sql_insert = 'INSERT INTO '.$this->table .'('.$sql.') VALUES('.$sql_param.')';
-		return Db::query($this->sql_insert,$this->params_insert)->lastInsertId();
+		$this->model_sql_insert = 'INSERT INTO '.$this->model_table .'('.$sql.') VALUES('.$sql_param.')';
+		return Db::query($this->model_sql_insert,$this->model_params_insert)->lastInsertId();
 	}
 }
