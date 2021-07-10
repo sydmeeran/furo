@@ -29,19 +29,18 @@ class Auth
 
 		try {
 			// $id = (int) Request::get('id'); // $_GET['id']
-			$email = Request::post('email'); // $_POST['email']
-			$pass = Request::post('pass'); // $_POST['pass']
+			$email = Valid::email($_POST['email']);
+			$pass = Valid::pass($_POST['pass']);
 
-			Valid::email($email);
-			Valid::pass($pass);
+			$user = Db::query("SELECT * FROM user WHERE email = :e AND status != 'DELETED' ORDER BY id DESC LIMIT 1", [':e' => $email])->fetchObj();
 
-			$user = Db::query("SELECT * FROM user WHERE email = :e AND status = 'ACTIVE'", [':e' => $email])->fetchObj();
-
+			if($user->status == 'ONHOLD') {
+				throw new Exception("ERR_ACTIVATION", 401);
+			}
 			if($user->pass == self::hash($pass)) {
-				unset($user->pass);
-				$_SESSION['user'] = $user;
-				// Get user IP address
-				self::userIp();
+				unset($user->pass); 		// Clear password
+				$_SESSION['user'] = $user;  // Set user object
+				self::userIp(); 			// Get user IP address
 			} else {
 				throw new Exception("ERR_CREDENTIALS", 401);
 			}
@@ -69,14 +68,11 @@ class Auth
 		$ex = null;
 		$msg = 'account_created';
 		$uid = 0;
+		$code = md5(uniqid());
 
 		try {
-			$email = $_POST['email'];
-			$pass = $_POST['pass'];
-			$code = md5(microtime().$email);
-
-			Valid::email($email);
-			Valid::pass($pass);
+			$email = Valid::email($_POST['email']);
+			$pass = Valid::pass($_POST['pass']);
 			self::accountExists($email);
 
 			$uid = Db::query("INSERT INTO user(email,pass,code,username) VALUES(:e,:p,:c,UUID_SHORT())", [':e' => $email, ':p' => self::hash($pass), ':c' => $code])->lastInsertId();
@@ -113,9 +109,7 @@ class Auth
 		$msg = 'password_updated';
 
 		try  {
-			$email = $_POST['email'];
-
-			Valid::email($email);
+			$email = Valid::email($_POST['email']);
 			self::accountNotExists($email);
 
 			$pass = uniqid();
@@ -152,14 +146,10 @@ class Auth
 		$msg = 'password_updated';
 
 		try  {
-			$email = $_POST['email'];
-			$pass = $_POST['pass'];
-			$pass1 = $_POST['pass1'];
-			$pass2 = $_POST['pass2'];
-
-			Valid::email($email);
-			Valid::pass($pass);
-			Valid::pass($pass1);
+			$email = Valid::email($_POST['email']);
+			$pass = Valid::pass($_POST['pass']);
+			$pass1 = Valid::pass($_POST['pass1']);
+			$pass2 = Valid::pass($_POST['pass2']);
 			Valid::repeatPass($pass1, $pass2);
 			self::accountNotExists($email);
 
@@ -189,16 +179,15 @@ class Auth
 	 */
 	function Activation()
 	{
-		$es = null;
+		$ex = null;
 		$msg = 'account_activated';
 
 		try {
 			$code = Request::urlParam('code');
-
 			self::codeNotExists($code);
 			self::accountActiv($code);
 
-			$cnt = Db::query("UPDATE user SET status = 'ACTIVE' WHERE status = 'ONHOLD' AND code = :c", [':c' => $code])->rowCount();
+			Db::query("UPDATE user SET status = 'ACTIVE' WHERE status = 'ONHOLD' AND code = :c", [':c' => $code])->rowCount();
 
 		} catch (Exception $e) {
 			$ex = $e;
