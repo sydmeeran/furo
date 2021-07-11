@@ -27,13 +27,34 @@ class SampleModel extends Model
 		Valid::alias($str);
 	}
 
-	function add()
+	function sampleMethod()
 	{
-		// Inactive in user
-		try {
+		try
+		{
 			// Do something
-		} catch(Exception $e) {
-			// Error
+		}
+		catch(Exception $e)
+		{
+			throw new Exception("ERR_SAMPLE_METHOD", 400);
 		}
 	}
 }
+
+/*
+// Model how to
+$m = new SampleModel();
+// Validate
+foreach ($_POST as $k => $v) {
+	$m->$k = $v;
+}
+// Add row to database after validation
+$m->insert($m->variables());
+// Get data
+$m->get(1);
+// Limit data
+$m->limit(10,0)->search('a')->desc();
+// Get all
+$m->all();
+// Count all
+$m->count();
+*/
