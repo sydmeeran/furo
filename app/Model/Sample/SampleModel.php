@@ -43,18 +43,27 @@ class SampleModel extends Model
 /*
 // Model how to
 $m = new SampleModel();
-// Validate
+
+// Validate and set variables
 foreach ($_POST as $k => $v) {
 	$m->$k = $v;
 }
+
 // Add row to database after validation
 $m->insert($m->variables());
+
 // Get data
 $m->get(1);
+
+// Search in columns
+$m->columns(['username','name','location']);
+
 // Limit data
 $m->limit(10,0)->search('a')->desc();
+
 // Get all
 $m->all();
+
 // Count all
 $m->count();
 */
