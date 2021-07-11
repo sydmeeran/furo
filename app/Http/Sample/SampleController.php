@@ -92,6 +92,38 @@ class SampleController
 		]);
 	}
 
+	function Insert()
+	{
+		$ex = null;
+		$msg = 'created';
+
+		try
+		{
+			// Middleware
+			$user = $_SESSION['user'];
+			// Model
+			$o = new SampleModel();
+			// Validate variables with model class
+			foreach ($_POST as $k => $v) {
+				$o->$k = $v;
+			}
+			// Add logged user id
+			$o->user_id = (int) $user->id;
+			// Create new user in db
+			$o->insert($o->variables());
+		}
+		catch (Exception $e) {
+			$ex = $e;
+			$msg = 'create_error';
+		}
+
+		return Response::httpError($ex)::jsonStatus([
+			'res' => [
+				'profil' => $msg
+			]
+		]);
+	}
+
 	function Delete()
 	{
 		$ex = null;
