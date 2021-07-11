@@ -55,6 +55,9 @@ foreach ($_POST as $k => $v) {
 	$m->$k = $v;
 }
 
+// Add user id to variables
+$m->id = 366;
+
 // Add row to database after validation
 $m->insert($m->variables());
 
