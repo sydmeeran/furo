@@ -10,12 +10,18 @@ use Furo\Entities\Valid;
  */
 class SampleModel extends Model
 {
+	protected $id = 0;
 	protected $username;
 	protected $email;
 	protected $name;
 	protected $about;
 	protected $location;
 	protected $www;
+
+	protected function id($id)
+	{
+		Valid::unsigned($id);
+	}
 
 	protected function email($str)
 	{
