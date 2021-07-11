@@ -108,7 +108,7 @@ class SampleController
 				$o->$k = $v;
 			}
 			// Add logged user id
-			$o->user_id = (int) $user->id;
+			$o->id = $user->id;
 			// Create new user in db
 			$o->insert($o->variables());
 		}
